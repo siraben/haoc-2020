@@ -1,29 +1,22 @@
 import Text.ParserCombinators.Parsec
 
-tok :: Parser a -> Parser a
-tok p = p <* space
-
 nat :: Parser Int
 nat = read <$> many1 digit
 
---           lo   hi   char pass
-type Line = (Int, Int, Char, String)
+tok = (<* space)
 
-processLine = do
-  lo <- nat
-  char '-'
-  hi <- tok nat
-  c <- letter <* tok (char ':')
-  p <- many letter
-  pure (lo,hi,c,p)
+--        lo   hi   char pass
+type L = (Int, Int, Char, String)
 
-isValid1 :: (Int, Int, Char, String) -> Bool
-isValid1 (l,h,c,s) = l <= occurs && occurs <= h
+processLine = (,,,) <$> (nat <* char '-') <*> (nat <* space) <*> (letter <* tok (char ':')) <*> many letter
+
+isValid1 :: L -> Bool
+isValid1 (l, h, c, s) = l <= occurs && occurs <= h
   where
     occurs = length (filter (== c) s)
 
-isValid2 :: (Int, Int, Char, String) -> Bool
-isValid2 (l,h,c,s) = (c == s !! (h - 1)) /= (c == s !! (l - 1))
+isValid2 :: L -> Bool
+isValid2 (l, h, c, s) = (c == s !! (h - 1)) /= (c == s !! (l - 1))
 
 main = do
   inp <- lines <$> readFile "day2.txt"
@@ -32,5 +25,3 @@ main = do
   print (length (filter isValid1 x))
   putStr "Part 2: "
   print (length (filter isValid2 x))
-
-
