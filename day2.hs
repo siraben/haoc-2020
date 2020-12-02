@@ -25,3 +25,56 @@ main = do
   print (length (filter isValid1 x))
   putStr "Part 2: "
   print (length (filter isValid2 x))
+
+{-
+From ##adventofcode-spoilers
+iqubic: hmm. Not sure I like traversing the list twice in "length (filter p xs)"
+siraben: Is it really traversing twice?
+siraben: List fusion should take over
+iqubic: I was not aware.
+dsal: I did basically that. The input's too small to matter.
+siraben: Right.
+siraben: Well one could fuse it manually via a fusion law
+
+Proof.
+  length . filter p
+= foldr (\_ c -> c + 1) 0 . filter p
+= foldr (\_ c -> c + 1) 0  . foldr (\x acc -> if p x then x:acc else acc) []
+
+Foldr fusion
+ h w = v and h (g x y) = f x (h y)
+-----------------------------------
+  h . foldr g w = foldr f v
+
+So,
+  h = length = foldr (\_ c -> c + 1) 0
+  foldr g w = foldr (\x acc -> if p x then x:acc else acc) []
+  g = (\x acc -> if p x then x:acc else acc)
+  w = []
+
+Now,
+  h w = length [] = 0
+  So v = 0.
+
+  h (g x y) = f x (h y)
+= length ((\x acc -> if p x then x:acc else acc) x y) = f x (length y)
+= length (if p x then x:y else y) = f x (length y)
+= if p x then length (x:y) else length y = f x (length y)
+= if p x then 1 + length y else length y = f x (length y)
+<= { generalize length y to ys }
+= if p x then 1 + ys else ys = f x ys
+
+So,
+  f x ys = if p x then 1 + ys else ys
+
+So
+  length . filter p
+= foldr (\_ c -> c + 1) 0  . foldr (\x acc -> if p x then x:acc else acc) []
+= foldr (\x ys -> if p x then 1 + ys else ys) 0
+QED
+Next,
+  foldr (\x ys -> if p x then 1 + ys else ys) 0
+= foldl (\ys x -> if p x then 1 + ys else ys) 0
+  { for finite list }
+= foldl' (\ys x -> if p x then 1 + ys else ys) 0
+-}
