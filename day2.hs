@@ -1,6 +1,5 @@
 import Text.ParserCombinators.Parsec
 
-
 tok :: Parser a -> Parser a
 tok p = p <* space
 
@@ -18,14 +17,20 @@ processLine = do
   p <- many letter
   pure (lo,hi,c,p)
 
-isValid :: (Int, Int, Char, String) -> Bool
-isValid (l,h,c,s) = l <= occurs && occurs <= h
+isValid1 :: (Int, Int, Char, String) -> Bool
+isValid1 (l,h,c,s) = l <= occurs && occurs <= h
   where
     occurs = length (filter (== c) s)
 
+isValid2 :: (Int, Int, Char, String) -> Bool
+isValid2 (l,h,c,s) = (c == s !! (h - 1)) /= (c == s !! (l - 1))
+
 main = do
   inp <- lines <$> readFile "day2.txt"
-  let Right x = traverse id (parse processLine "" <$> inp)
-  print (length (filter isValid x))
-  
-  
+  let Right x = sequenceA (parse processLine "" <$> inp)
+  putStr "Part 1: "
+  print (length (filter isValid1 x))
+  putStr "Part 2: "
+  print (length (filter isValid2 x))
+
+
