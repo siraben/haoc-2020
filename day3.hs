@@ -1,5 +1,6 @@
 import Data.List (foldl')
 import qualified Data.ByteString.Char8 as B
+import Criterion.Main
 
 -- Solve for right r down d
 solve i r d = let (a,_,_) = foldl' f (0, r, d) i in a
@@ -16,3 +17,6 @@ main = do
   inp <- B.lines <$> B.readFile "day3.txt"
   print (part1 inp)
   print (part2 inp)
+  defaultMain [ bgroup "day3" [ bench "part1" $ whnf part1 inp
+                              , bench "part2" $ whnf part2 inp
+                              ] ]
