@@ -1,3 +1,4 @@
+import Data.List (foldl')
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 
@@ -6,10 +7,10 @@ part1 = solveGeneric 3
 
 -- Solve for right r down 1
 solveGeneric :: Int -> [T.Text] -> Int
-solveGeneric r i = length (filter (== '#') slope)
+solveGeneric r = fst . foldl' f (0, r) . tail
   where
-    cols = iterate ((`mod` 31) . (+ r)) 0
-    slope = zipWith T.index i cols
+    -- (number of #s, col counter)
+    f (hs, cc) l = (hs + if l `T.index` cc == '#' then 1 else 0, (cc + r) `mod` 31)
 
 part2 :: [T.Text] -> Int
 part2 i = product ((`solveGeneric` i) <$> [1, 3, 5, 7]) * solveGeneric 1 (everySecond i)
