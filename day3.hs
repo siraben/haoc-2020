@@ -4,6 +4,7 @@ import qualified Data.ByteString.Char8 as B
 import Criterion.Main
 
 -- Solve for right r down d
+solve :: [B.ByteString] -> Int -> Int -> Int
 solve i r d = let (a,_,_) = foldl' f (0, r, d) i in a
   where
     -- (number of #s, col counter, row counter)
