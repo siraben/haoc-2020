@@ -4,7 +4,7 @@ import qualified Data.Text.IO as TIO
 part1 :: [T.Text] -> Int
 part1 = solveGeneric 3
 
--- right down input
+-- Solve for right r down 1
 solveGeneric :: Int -> [T.Text] -> Int
 solveGeneric r i = length (filter (== '#') slope)
   where
@@ -14,9 +14,10 @@ solveGeneric r i = length (filter (== '#') slope)
 part2 :: [T.Text] -> Int
 part2 i = product ((`solveGeneric` i) <$> [1, 3, 5, 7]) * solveGeneric 1 (everySecond i)
 
-everySecond (a : _ : as) = a : everySecond as
-everySecond [a] = [a]
-everySecond [] = []
+-- Every second element of a list
+everySecond = fst . foldr f ([], True)
+  where
+    f x (l, b) = (if b then x : l else l, not b)
 
 main = do
   inp <- T.lines <$> TIO.readFile "day3.txt"
