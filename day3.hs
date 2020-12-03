@@ -12,7 +12,7 @@ solve i r d = let (a,_,_) = foldl' f (0, r, d) i in a
 
 part1, part2 :: [B.ByteString] -> Int
 part1 i = solve i 3 1
-part2 i = product (uncurry (solve i) <$> [(1,1), (3,1), (5,1), (7,1), (1,2)])
+part2 i = solve i 1 1 * solve i 3 1 * solve i 5 1 * solve i 7 1 * solve i 1 2
 
 main = do
   inp <- B.lines <$> B.readFile "day3.txt"
