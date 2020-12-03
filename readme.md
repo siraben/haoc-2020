@@ -68,19 +68,19 @@ Model name:                      Intel(R) Core(TM) i5-4288U CPU @ 2.60GHz
 <details>
 
 ```
-benchmarking day2/part1
-time                 806.4 ns   (777.8 ns .. 859.8 ns)
-                     0.986 R²   (0.975 R² .. 0.998 R²)
-mean                 793.0 ns   (779.3 ns .. 833.7 ns)
-std dev              62.33 ns   (9.462 ns .. 112.3 ns)
-variance introduced by outliers: 83% (severely inflated)
+benchmarking day1/part1
+time                 823.0 ns   (799.2 ns .. 846.3 ns)
+                     0.996 R²   (0.994 R² .. 0.999 R²)
+mean                 801.0 ns   (790.4 ns .. 817.7 ns)
+std dev              42.82 ns   (29.91 ns .. 57.26 ns)
+variance introduced by outliers: 70% (severely inflated)
 
-benchmarking day2/part2
-time                 127.6 μs   (125.5 μs .. 130.0 μs)
-                     0.997 R²   (0.995 R² .. 0.998 R²)
-mean                 128.3 μs   (126.3 μs .. 131.0 μs)
-std dev              7.748 μs   (6.337 μs .. 9.828 μs)
-variance introduced by outliers: 60% (severely inflated)
+benchmarking day1/part2
+time                 125.4 μs   (123.9 μs .. 127.0 μs)
+                     0.998 R²   (0.997 R² .. 0.999 R²)
+mean                 128.0 μs   (126.2 μs .. 129.8 μs)
+std dev              6.217 μs   (5.275 μs .. 7.187 μs)
+variance introduced by outliers: 49% (moderately inflated)
 ```
 </details>
 
