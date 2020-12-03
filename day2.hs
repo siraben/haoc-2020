@@ -1,4 +1,5 @@
 import Criterion.Main
+import qualified Data.ByteString.Char8 as B
 import Text.ParserCombinators.Parsec
 
 nat :: Parser Int
@@ -6,18 +7,18 @@ nat = read <$> many1 digit
 
 tok = (<* space)
 
---        lo   hi   char pass
-type L = (Int, Int, Char, String)
+--       lo   hi   char pass
+type L = (Int, Int, Char, B.ByteString)
 
-processLine = (,,,) <$> (nat <* char '-') <*> (nat <* space) <*> (letter <* tok (char ':')) <*> many letter
+processLine = (,,,) <$> (nat <* char '-') <*> (nat <* space) <*> (letter <* tok (char ':')) <*> (B.pack <$> many letter)
 
 isValid1 :: L -> Bool
 isValid1 (l, h, c, s) = l <= occurs && occurs <= h
   where
-    occurs = length (filter (== c) s)
+    occurs = B.count c s
 
 isValid2 :: L -> Bool
-isValid2 (l, h, c, s) = (c == s !! (h - 1)) /= (c == s !! (l - 1))
+isValid2 (l, h, c, s) = (c == s `B.index` (h - 1)) /= (c == s `B.index` (l - 1))
 
 part1 = length . filter isValid1
 part2 = length . filter isValid2
