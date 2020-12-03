@@ -1,28 +1,24 @@
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 
-part1 i = length (filter (== '#') (head <$> slope))
-  where
-    w = cycle <$> i
-    slope = tail $ zipWith ($) (iterate (drop 3 .) id) w
-
-part2 i = product ((`solveGeneric` i) <$> [1,3,5,7]) * hack
-  where
-    hack = length (filter (== '#') (head <$> slope))
-    w = everySecond (cycle <$> i)
-    slope = tail $ zipWith ($) (iterate (drop 1 .) id) w
+part1 :: [T.Text] -> Int
+part1 = solveGeneric 3
 
 -- right down input
-solveGeneric r i = length (filter (== '#') (head <$> slope))
+solveGeneric :: Int -> [T.Text] -> Int
+solveGeneric r i = length (filter (== '#') slope)
   where
-    w = cycle <$> i
-    slope = tail $ zipWith ($) (iterate (drop r .) id) w
+    cols = iterate ((`mod` 31) . (+ r)) 0
+    slope = zipWith T.index i cols
 
+part2 :: [T.Text] -> Int
+part2 i = product ((`solveGeneric` i) <$> [1, 3, 5, 7]) * solveGeneric 1 (everySecond i)
 
-everySecond (a:_:as) = a : everySecond as
+everySecond (a : _ : as) = a : everySecond as
 everySecond [a] = [a]
 everySecond [] = []
 
--- part2 
 main = do
-  inp <- lines <$> readFile "day3.txt"
+  inp <- T.lines <$> TIO.readFile "day3.txt"
   print (part1 inp)
   print (part2 inp)
