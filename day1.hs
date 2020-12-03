@@ -1,10 +1,10 @@
 import Criterion.Main
-import qualified Data.Set as S
+import qualified Data.IntSet as S
 
 sample :: [Int]
 sample = [1721, 979, 366, 299, 675, 1456]
 
-solve1 :: Int -> [Int] -> S.Set Int -> Int
+solve1 :: Int -> [Int] -> S.IntSet -> Int
 solve1 t l s = head [(2020 - n) * n | n <- l, S.member (t - n) s]
 
 solve2 l s = head [n * c | n <- l, c <- solve1' (2020 - n) l s ]
