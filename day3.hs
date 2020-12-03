@@ -13,12 +13,11 @@ solveGeneric r = fst . foldl' f (0, r) . tail
     f (hs, cc) l = (hs + if l `T.index` cc == '#' then 1 else 0, (cc + r) `mod` 31)
 
 part2 :: [T.Text] -> Int
-part2 i = product ((`solveGeneric` i) <$> [1, 3, 5, 7]) * solveGeneric 1 (everySecond i)
-
--- Every second element of a list
-everySecond = fst . foldr f ([], True)
+part2 i = product ((`solveGeneric` i) <$> [1, 3, 5, 7]) * foo
   where
+    foo = fst (foldl' g (0, 1) (tail (fst (foldr f ([], True) i))))
     f x (l, b) = (if b then x : l else l, not b)
+    g (hs, cc) l = (hs + if l `T.index` cc == '#' then 1 else 0, (cc + 1) `mod` 31)
 
 main = do
   inp <- T.lines <$> TIO.readFile "day3.txt"
