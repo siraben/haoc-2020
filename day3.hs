@@ -1,7 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
-import Data.List (foldl')
-import qualified Data.ByteString.Char8 as B
 import Criterion.Main
+import qualified Data.ByteString.Char8 as B
+import Data.List (foldl')
 
 -- Solve for right r down d
 solve :: [B.ByteString] -> Int -> Int -> Int

@@ -1,0 +1,15 @@
+# Ignore binaries
+*
+!*.*
+!*/
+
+# Ignore files related to benchmarking and profiling
+*.o
+*.hi
+*.html
+.hpc/
+*.tix
+*.prof
+
+# Ignore direnv
+.direnv/

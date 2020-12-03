@@ -1,3 +1,4 @@
+import Criterion.Main
 import Text.ParserCombinators.Parsec
 
 nat :: Parser Int
@@ -18,13 +19,20 @@ isValid1 (l, h, c, s) = l <= occurs && occurs <= h
 isValid2 :: L -> Bool
 isValid2 (l, h, c, s) = (c == s !! (h - 1)) /= (c == s !! (l - 1))
 
+part1 = length . filter isValid1
+part2 = length . filter isValid2
+
 main = do
   inp <- lines <$> readFile "day2.txt"
   let Right x = sequenceA (parse processLine "" <$> inp)
   putStr "Part 1: "
-  print (length (filter isValid1 x))
+  print (part1 x)
   putStr "Part 2: "
-  print (length (filter isValid2 x))
+  print (part2 x)
+  defaultMain [ bgroup "day2" [ bench "part1" $ whnf part1 x
+                              , bench "part2" $ whnf part2 x
+                              ] ]
+ 
 
 {-
 From ##adventofcode-spoilers

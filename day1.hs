@@ -1,3 +1,4 @@
+import Criterion.Main
 import qualified Data.Set as S
 
 sample :: [Int]
@@ -11,6 +12,8 @@ solve2 l s = head [n * c | n <- l, c <- solve1' (2020 - n) l s ]
     solve1' t l s = [(t - n) * n | n <- l, S.member (t - n) s]
 
 -- Challenge: how to generalize to arbitrary n?
+part1 = uncurry (solve1 2020)
+part2 = uncurry solve2
 
 main = do
   inp <- (read <$>) . lines <$> readFile "day1.txt"
@@ -19,3 +22,6 @@ main = do
   print (solve1 2020 inp s)
   putStr "Part 2: "
   print (solve2 inp s)
+  defaultMain [ bgroup "day1" [ bench "part1" $ whnf part1 (inp, s)
+                              , bench "part2" $ whnf part2 (inp, s)
+                              ] ]
