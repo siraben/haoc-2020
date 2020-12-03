@@ -2,22 +2,16 @@ import Data.List (foldl')
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 
-part1 :: [T.Text] -> Int
-part1 = solveGeneric 3
-
--- Solve for right r down 1
-solveGeneric :: Int -> [T.Text] -> Int
-solveGeneric r = fst . foldl' f (0, r) . tail
+-- Solve for right r down d
+solve i r d = let (a,_,_) = foldl' f (0, r, d) i in a
   where
-    -- (number of #s, col counter)
-    f (hs, cc) l = (hs + if l `T.index` cc == '#' then 1 else 0, (cc + r) `mod` 31)
+    -- (number of #s, col counter, row counter)
+    f (hs, cc, 0) l = (hs + if l `T.index` cc == '#' then 1 else 0, (cc + r) `mod` 31, d - 1)
+    f (hs, cc, dc) _ = (hs, cc, dc - 1)
 
-part2 :: [T.Text] -> Int
-part2 i = product ((`solveGeneric` i) <$> [1, 3, 5, 7]) * r1d2
-  where
-    -- Alternate lines and accumulate result at the same time
-    r1d2 = let (a, _, _) = foldl' g (0, 1, False) (tail i) in a
-    g (hs, cc, b) l = (hs + if b && l `T.index` cc == '#' then 1 else 0, (cc + if b then 1 else 0) `mod` 31, not b)
+part1, part2 :: [T.Text] -> Int
+part1 i = solve i 3 1
+part2 i = product (uncurry (solve i) <$> [(1,1), (3,1), (5,1), (7,1), (1,2)])
 
 main = do
   inp <- T.lines <$> TIO.readFile "day3.txt"
