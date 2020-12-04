@@ -21,13 +21,8 @@ nat :: BT.Parser Int
 nat = read <$> many1 digit
 
 hgtParse = do
-  let failUnless b = unless b (fail "oof")
   n <- nat
-  unit <- string "cm" <|> string "in"
-  case unit of
-    "cm" -> failUnless (within 150 193 n)
-    "in" -> failUnless (within 59 76 n)
-    _ -> fail "bruh"
+  (string "cm" *> guard (within 150 193 n)) <|> (string "in" *> guard (within 59 76 n))
 
 within :: Int -> Int -> Int -> Bool
 within l h n = l <= n && n <= h
@@ -44,7 +39,7 @@ data Passport = Passport
   }
   deriving (Show)
 
-hclParse = char '#' *> replicateM_ 6 hexDigit
+hclParse = char '#' *> count 6 hexDigit $> ()
 
 eclParse = do
   n <- count 3 lower
@@ -62,7 +57,7 @@ parsePass =
     <*> parseLf "hcl" hclParse
     <*> parseLf "hgt" hgtParse
     <*> parseLf "iyr" (nat4Within "2010" "2020")
-    <*> parseLf "pid" (replicateM_ 9 digit)
+    <*> parseLf "pid" (count 9 digit $> ())
   where
     nat4Within :: String -> String -> BT.Parser ()
     nat4Within l h = do
@@ -75,14 +70,10 @@ part1 = length . filter check
 
 part2 = length . filter validPassPassed
 
-check l = isValid l'
-  where
-    l' = B.takeWhile (/= ':') <$> l
-    allLabels = ["byr","cid","ecl","eyr","hcl","hgt","iyr","pid"]
-    labelsWithoutCid = ["byr","ecl","eyr","hcl","hgt","iyr","pid"]
-    isValid ls = n == 8 || (n == 7 && "cid" `notElem` ls)
-      where
-        n = length ls
+check :: [B.ByteString] -> Bool
+check (_:_:_:_:_:_:_:_:_) = True
+check l@(_:_:_:_:_:_:_:_) = not (any ("cid" `B.isPrefixOf`) l)
+check _ = False
 
 splitOn' :: B.ByteString -> B.ByteString -> [B.ByteString]
 splitOn' del bs | B.null bs = []
