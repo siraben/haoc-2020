@@ -25,19 +25,27 @@ hgtParse = do
 within :: Int -> Int -> Int -> Bool
 within l h n = l <= n && n <= h
 
+hclParse :: BT.Parser ()
 hclParse = char '#' *> count 6 hexDigit $> ()
 
 eclParse = do
   n <- count 3 lower
-  guard (n `elem` eyeCols)
+  guard (f n)
   where
-    eyeCols = words "amb blu brn gry grn hzl oth"
+    f "amb" = True
+    f "blu" = True
+    f "brn" = True
+    f "gry" = True
+    f "grn" = True
+    f "hzl" = True
+    f "oth" = True
+    f _ = False
 
 -- Parse a valid passport
 parsePass :: BT.Parser ()
 parsePass = do
   parseLf "byr" (nat4Within "1920" "2002")
-  optionMaybe (parseLf "cid" nat)
+  optionMaybe (parseLf "cid" (many1 digit))
   parseLf "ecl" eclParse
   parseLf "eyr" (nat4Within "2020" "2030")
   parseLf "hcl" hclParse
@@ -50,16 +58,18 @@ parsePass = do
       n <- count 4 digit
       if l <= n && n <= h then pure () else fail "number out of range"
 
-validPassPassed = isRight . parse parsePass ""
+validPassport1 :: [B.ByteString] -> Bool
+validPassport1 (_ : _ : _ : _ : _ : _ : _ : _ : _) = True
+validPassport1 l@(_ : _ : _ : _ : _ : _ : _ : _) = not (any ("cid" `B.isPrefixOf`) l)
+validPassport1 _ = False
 
-part1 = length . filter check
+validPassport2 = isRight . parse parsePass ""
 
-part2 = length . filter validPassPassed
+part1 :: [[B.ByteString]] -> Int
+part1 = length . filter validPassport1
 
-check :: [B.ByteString] -> Bool
-check (_ : _ : _ : _ : _ : _ : _ : _ : _) = True
-check l@(_ : _ : _ : _ : _ : _ : _ : _) = not (any ("cid" `B.isPrefixOf`) l)
-check _ = False
+part2 :: [B.ByteString] -> Int
+part2 = length . filter validPassport2
 
 splitOn' :: B.ByteString -> B.ByteString -> [B.ByteString]
 splitOn' _ bs | B.null bs = []
