@@ -1,119 +1,99 @@
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BangPatterns #-}
-import Criterion.Main
-import qualified Data.ByteString.Char8 as B
-import Data.List
-import Text.ParserCombinators.Parsec
-import Data.Function
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+
 import Control.Monad
+import Criterion.Main
 import Data.Either
+import Data.Functor
+import Data.List
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+import Text.Parsec
+import qualified Text.Parsec.Text as PT
+import qualified Text.Parsec.ByteString as BT
 
--- part1, part2 :: [String] -> Int
--- part1 i = undefined
--- part2 i = undefined
-
-splitBy delimiter = foldr f [[]]
-            where f c l@(x:xs) | c == delimiter = []:l
-                             | otherwise = (c:x):xs
-
-check l = isValid l'
-  where
-    l' = takeWhile (/= ':') <$> l
-    allLabels = sort ["eyr","iyr","byr","ecl","pid","hcl","hgt","cid"]
-    isValid ls = allLabels == sort ls || (allLabels \\ ["cid"]) == sort ls
-
-
-type EyeCol = String
-type PassNo = String -- nine digits
-
-
-tok :: Parser a -> Parser a
+tok :: PT.Parser a -> PT.Parser a
 tok = (<* space)
+
 -- parse labelled field
 parseLf l p = do
   string l
   string ":"
   tok p
 
-nat :: Parser Int
+nat :: PT.Parser Int
 nat = read <$> many1 digit
-
-word = tok (many letter)
 
 hgtParse = do
   let failIfNot b = unless b (fail "oof")
-  n <- read <$> many1 digit
+  n <- nat
   unit <- string "cm" <|> string "in"
   case unit of
     "cm" -> failIfNot (within 150 193 n)
     "in" -> failIfNot (within 59 76 n)
     _ -> fail "bruh"
 
-eyeCols = words "amb blu brn gry grn hzl oth"
-
 within l h n = l <= n && n <= h
-natWithin l h = do
-  n <- nat
-  if within l h n then pure n else fail "number out of range"
 
-constrain l h n =
-  if within l h n then pure n else fail "number out of range"
-
-parsePass :: Parser Passport
-parsePass = Passport <$> parseLf "byr" g
-                     <*> optionMaybe (parseLf "cid" (many digit))
-                     <*> parseLf "ecl" (foldr (\x y -> try x <|> y) (fail "invalid eye color") (string <$> eyeCols))
-                     <*> parseLf "eyr" h
-                     <*> parseLf "hcl" (char '#' *> replicateM 6 hexDigit)
-                     <*> parseLf "hgt" hgtParse
-                     <*> parseLf "iyr" gg
-                     <*> parseLf "pid" (replicateM 9 digit)
-  where
-    g = do
-      n <- read <$> replicateM 4 digit
-      constrain 1920 2002 n
-    h = do
-      n <- read <$> replicateM 4 digit
-      constrain 2020 2030 n
-    gg = do
-      n <- read <$> replicateM 4 digit
-      constrain 2010 2020 n
-
-gaga = parse parsePass ""
-validPassPassed s = isRight (parse parsePass "" s)
 data Passport = Passport
-  {
-    byr :: Int,
-    cid :: Maybe String,
-    ecl :: EyeCol,
+  { byr :: Int,
+    cid :: Maybe (),
+    ecl :: (),
     eyr :: Int,
-    hcl :: String,
+    hcl :: T.Text,
     hgt :: (),
     iyr :: Int,
-    pid :: PassNo
-  } deriving Show
+    pid :: ()
+  }
+  deriving (Show)
 
+hclParse = char '#' *> (T.pack <$> replicateM 6 hexDigit)
 
-exValid = sortBy (compare `on` fst) ((\[a,b] -> (a,b)) . splitBy ':' <$> s)
+eclParse = foldr (\x y -> try x <|> y) (fail "invalid eye color") (string <$> eyeCols) $> ()
   where
-    s = words "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980 hcl:#623a2f"
+    eyeCols = words "amb blu brn gry grn hzl oth"
 
+parsePass :: PT.Parser Passport
+parsePass =
+  Passport <$> parseLf "byr" g
+    <*> optionMaybe (parseLf "cid" nat $> ())
+    <*> parseLf "ecl" eclParse
+    <*> parseLf "eyr" h
+    <*> parseLf "hcl" hclParse
+    <*> parseLf "hgt" hgtParse
+    <*> parseLf "iyr" gg
+    <*> parseLf "pid" (replicateM_ 9 digit)
+  where
+    nat4Within l h = do
+      n <- read <$> replicateM 4 digit
+      if within l h n then pure n else fail "number out of range"
+    g = nat4Within 1920 2002
+    h = nat4Within 2020 2030
+    gg = nat4Within 2010 2020
 
-exValidStr = unwords (sort (words "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980 hcl:#623a2f"))
+validPassPassed s = isRight (parse parsePass "" s)
 
 part1 = length . filter check
+
 part2 = length . filter validPassPassed
 
-exInvalidStr = unwords (sort (words  "hcl:dab227 iyr:2012 ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277" ))
+check l = isValid l'
+  where
+    l' = T.takeWhile (/= ':') <$> l
+    allLabels = sort ["eyr", "iyr", "byr", "ecl", "pid", "hcl", "hgt", "cid"]
+    isValid ls = allLabels == sort ls || (allLabels \\ ["cid"]) == sort ls
+
 main = do
   let dayNumber = 4 :: Int -- FIXME: change day number
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
-  inp <- lines <$> readFile dayFilename
-  let inp' = words <$> (unwords <$> splitBy "" inp)
-  let inp'' = (++ " ") . unwords . sort . words . unwords <$> splitBy "" inp
-  print (length (filter check inp'))
-  print (length (filter validPassPassed inp''))
+  inp <- TIO.readFile dayFilename
+  let inp' = T.words . T.unwords . T.lines <$> T.splitOn "\n\n" inp
+  let inp'' = (<> " ") . T.unwords . sort <$> inp'
+  print (part1 inp')
+  print (part2 inp'')
   defaultMain [ bgroup dayString [ bench "part1" $ whnf part1 inp'
-                              , bench "part2" $ whnf part2 inp''
-                              ] ]
+                                 , bench "part2" $ whnf part2 inp''
+                                 ] ]
