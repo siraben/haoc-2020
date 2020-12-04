@@ -8,9 +8,9 @@ import Data.Function
 import Control.Monad
 import Data.Either
 
-part1, part2 :: [String] -> Int
-part1 i = undefined
-part2 i = undefined
+-- part1, part2 :: [String] -> Int
+-- part1 i = undefined
+-- part2 i = undefined
 
 splitBy delimiter = foldr f [[]]
             where f c l@(x:xs) | c == delimiter = []:l
@@ -93,12 +93,6 @@ data Passport = Passport
     pid :: PassNo
   } deriving Show
 
--- check2 l = l'
---   where
---     l' = (\[a,b] -> (a,b)) <$> splitBy ':' l
-
---     -- allLabels = ["byr","cid","ecl","eyr","hcl","hgt","iyr","pid"]
---     -- isValid ls = allLabels == sort ls || (allLabels \\ ["cid"]) == sort ls
 
 exValid = sortBy (compare `on` fst) ((\[a,b] -> (a,b)) . splitBy ':' <$> s)
   where
@@ -107,21 +101,19 @@ exValid = sortBy (compare `on` fst) ((\[a,b] -> (a,b)) . splitBy ':' <$> s)
 
 exValidStr = unwords (sort (words "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980 hcl:#623a2f"))
 
+part1 = length . filter check
+part2 = length . filter validPassPassed
+
 exInvalidStr = unwords (sort (words  "hcl:dab227 iyr:2012 ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277" ))
 main = do
   let dayNumber = 4 :: Int -- FIXME: change day number
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
   inp <- lines <$> readFile dayFilename
-  let inp' = (++ " ") <$> (unwords <$> (sort <$> (words <$> (unwords <$> splitBy "" inp))))
-  print (length (filter validPassPassed inp'))
-
---   -- print (takeWhile (/= "")inp)
---   let inp' = check <$> (words <$> (unwords <$> splitBy "" inp))
---   -- print (takeWhile (/= "\n") inp')
---   print (length (filter id inp'))
---   -- print (part1 inp)
---   -- print (part2 inp)
---   -- defaultMain [ bgroup dayString [ bench "part1" $ whnf part1 inp
---   --                             , bench "part2" $ whnf part2 inp
---   --                             ] ]
+  let inp' = words <$> (unwords <$> splitBy "" inp)
+  let inp'' = (++ " ") . unwords . sort . words . unwords <$> splitBy "" inp
+  print (length (filter check inp'))
+  print (length (filter validPassPassed inp''))
+  defaultMain [ bgroup dayString [ bench "part1" $ whnf part1 inp'
+                              , bench "part2" $ whnf part2 inp''
+                              ] ]
