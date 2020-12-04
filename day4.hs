@@ -3,19 +3,17 @@
 
 import Control.Monad
 import Criterion.Main
+import qualified Data.ByteString.Char8 as B
 import Data.Either
 import Data.Functor
 import Data.List
 import Text.Parsec
 import qualified Text.Parsec.ByteString as BT
-import qualified Data.Set as S
-import qualified Data.ByteString.Char8 as B
-
-tok :: BT.Parser a -> BT.Parser a
-tok = (<* space)
 
 -- parse labelled field
-parseLf l p = string l *> char ':' *> tok p
+{-# INLINE parseLf #-}
+parseLf :: String -> BT.Parser a -> BT.Parser ()
+parseLf l p = string l *> char ':' *> (p <* space) $> ()
 
 nat :: BT.Parser Int
 nat = read <$> many1 digit
@@ -27,37 +25,25 @@ hgtParse = do
 within :: Int -> Int -> Int -> Bool
 within l h n = l <= n && n <= h
 
-data Passport = Passport
-  { byr :: (),
-    cid :: Maybe (),
-    ecl :: (),
-    eyr :: (),
-    hcl :: (),
-    hgt :: (),
-    iyr :: (),
-    pid :: ()
-  }
-  deriving (Show)
-
 hclParse = char '#' *> count 6 hexDigit $> ()
 
 eclParse = do
   n <- count 3 lower
-  guard (n `S.member` eyeCols)
+  guard (n `elem` eyeCols)
   where
-    eyeCols = S.fromList (words "amb blu brn gry grn hzl oth")
+    eyeCols = words "amb blu brn gry grn hzl oth"
 
 -- Parse a valid passport
-parsePass :: BT.Parser Passport
-parsePass =
-  Passport <$> parseLf "byr" (nat4Within "1920" "2002")
-    <*> optionMaybe (parseLf "cid" nat $> ())
-    <*> parseLf "ecl" eclParse
-    <*> parseLf "eyr" (nat4Within "2020" "2030")
-    <*> parseLf "hcl" hclParse
-    <*> parseLf "hgt" hgtParse
-    <*> parseLf "iyr" (nat4Within "2010" "2020")
-    <*> parseLf "pid" (count 9 digit $> ())
+parsePass :: BT.Parser ()
+parsePass = do
+  parseLf "byr" (nat4Within "1920" "2002")
+  optionMaybe (parseLf "cid" nat)
+  parseLf "ecl" eclParse
+  parseLf "eyr" (nat4Within "2020" "2030")
+  parseLf "hcl" hclParse
+  parseLf "hgt" hgtParse
+  parseLf "iyr" (nat4Within "2010" "2020")
+  parseLf "pid" (count 9 digit)
   where
     nat4Within :: String -> String -> BT.Parser ()
     nat4Within l h = do
@@ -71,12 +57,12 @@ part1 = length . filter check
 part2 = length . filter validPassPassed
 
 check :: [B.ByteString] -> Bool
-check (_:_:_:_:_:_:_:_:_) = True
-check l@(_:_:_:_:_:_:_:_) = not (any ("cid" `B.isPrefixOf`) l)
+check (_ : _ : _ : _ : _ : _ : _ : _ : _) = True
+check l@(_ : _ : _ : _ : _ : _ : _ : _) = not (any ("cid" `B.isPrefixOf`) l)
 check _ = False
 
 splitOn' :: B.ByteString -> B.ByteString -> [B.ByteString]
-splitOn' del bs | B.null bs = []
+splitOn' _ bs | B.null bs = []
 splitOn' del bs =
   case B.breakSubstring del bs of
     (ls, rest) ->
