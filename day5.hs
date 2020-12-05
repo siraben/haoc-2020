@@ -2,53 +2,37 @@
 {-# LANGUAGE OverloadedStrings #-}
 import Criterion.Main
 import qualified Data.ByteString.Char8 as B
-import qualified Data.List as L
+import qualified Data.Vector as V
 
 solve :: B.ByteString -> Int
-solve l = r * 8 + c
+solve l = B.foldl' f 0 l
   where
-    (a, b) = B.splitAt 7 l
-    go s 'F' = loHalf s
-    go s 'B' = upHalf s
-    r = fst (B.foldl' go (0, 127 :: Int) a)
-    c = fst (B.foldl' fish (0, 7) b)
-    fish s 'L' = loHalf s
-    fish s 'R' = upHalf s
-    upHalf (l, h) = (l + ((1 + h - l) `div` 2), h)
-    loHalf (l, h) = (l, l + ((h - l) `div` 2))
+    f n 'F' = 2 * n
+    f n 'B' = 2 * n + 1
+    f n 'L' = 2 * n
+    f n 'R' = 2 * n + 1
 
--- solve' :: B.ByteString -> Int
-solve' l = L.foldl' f 0 l'
+-- (part1, part2)
+genericSolve :: V.Vector B.ByteString -> (Int, Int)
+genericSolve l = process (V.foldl' f init l)
   where
-    r 'F' = 0
-    r 'B' = 1
-    r 'L' = 0
-    r 'R' = 1
-    l' = r <$> l
-    f n x = 2 * n + x
+    -- min max sum
+    init :: (Int, Int, Int)
+    init = (maxBound, 0, 0)
+    process (!a, !b, !c) = (b, ((b * (b + 1) - a * (a -1)) `div` 2) - c)
+    f (a, b, c) x = (min a n, max b n, c + n)
+      where
+        n = solve x
 
-part1 :: [B.ByteString] -> Int
-part1 = maximum . (solve <$>)
+part1 = fst . genericSolve
 
-{-
-Let a <= b, then
-sum [0..a] = a(a+1) / 2
-sum [0..b] = b(b+1) / 2
-sum [a..b] = sum [0..b] - sum[0..a-1]
-           = b(b+1) / 2 - (a-1)((a-1)+1) / 2
-           = (b(b+1)-a(a-1))/2
-[]
-
-So, let a = 54; b = 930 in (b*(b+1)-a*(a-1)) `div` 2 == 431484
--}
-part2 :: [B.ByteString] -> Int
-part2 = (431484 -) . sum  . (solve <$>)
+part2 = snd . genericSolve
 
 main = do
   let dayNumber = 5 :: Int
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
-  inp <- B.lines <$> B.readFile dayFilename
+  inp <- V.fromList . B.lines <$> B.readFile dayFilename
   print (part1 inp)
   print (part2 inp)
   defaultMain
