@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 import Criterion.Main
 import qualified Data.ByteString.Char8 as B
+import qualified Data.List as L
 
 solve :: B.ByteString -> Int
 solve l = r * 8 + c
@@ -15,6 +16,16 @@ solve l = r * 8 + c
     fish s 'R' = upHalf s
     upHalf (l, h) = (l + ((1 + h - l) `div` 2), h)
     loHalf (l, h) = (l, l + ((h - l) `div` 2))
+
+-- solve' :: B.ByteString -> Int
+solve' l = L.foldl' f 0 l'
+  where
+    r 'F' = 0
+    r 'B' = 1
+    r 'L' = 0
+    r 'R' = 1
+    l' = r <$> l
+    f n x = 2 * n + x
 
 part1 :: [B.ByteString] -> Int
 part1 = maximum . (solve <$>)
