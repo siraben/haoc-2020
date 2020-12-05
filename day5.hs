@@ -4,14 +4,13 @@
 import Criterion.Main
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Vector as V
+import Data.Char
+import Data.Bits
 
 solve :: B.ByteString -> Int
 solve l = B.foldl' f 0 l
   where
-    f n 'F' = 2 * n
-    f n 'B' = 2 * n + 1
-    f n 'L' = 2 * n
-    f n 'R' = 2 * n + 1
+    f n c = n + n + shiftR (complement (ord c) .&. 4) 2
 
 -- (part1, part2)
 genericSolve :: V.Vector B.ByteString -> (Int, Int)
@@ -20,7 +19,7 @@ genericSolve l = process (V.foldl' f init l)
     -- min max sum
     init :: (Int, Int, Int)
     init = (maxBound, 0, 0)
-    process (!a, !b, !c) = (b, (b * (b + 1) - a * (a - 1)) `div` 2 - c)
+    process (!a, !b, !c) = (b, shiftR (b * (b + 1) - a * (a - 1)) 1 - c)
     f (!a, !b, !c) x = (min a n, max b n, c + n)
       where
         n = solve x
