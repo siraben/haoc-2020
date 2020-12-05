@@ -1,5 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
+
 import Criterion.Main
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Vector as V
@@ -19,13 +20,15 @@ genericSolve l = process (V.foldl' f init l)
     -- min max sum
     init :: (Int, Int, Int)
     init = (maxBound, 0, 0)
-    process (!a, !b, !c) = (b, ((b * (b + 1) - a * (a -1)) `div` 2) - c)
-    f (a, b, c) x = (min a n, max b n, c + n)
+    process (!a, !b, !c) = (b, (b * (b + 1) - a * (a - 1)) `div` 2 - c)
+    f (!a, !b, !c) x = (min a n, max b n, c + n)
       where
         n = solve x
 
+part1 :: V.Vector B.ByteString -> Int
 part1 = fst . genericSolve
 
+part2 :: V.Vector B.ByteString -> Int
 part2 = snd . genericSolve
 
 main = do
