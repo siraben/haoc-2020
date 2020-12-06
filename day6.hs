@@ -1,10 +1,10 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import Criterion.Main ( defaultMain, bench, bgroup, whnf )
+import Criterion.Main (bench, bgroup, defaultMain, whnf)
+import Data.Bits
 import qualified Data.ByteString.Char8 as B
 import Data.Char
-import Data.Bits 
 import Data.List
 
 splitOn' del bs = go bs
