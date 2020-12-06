@@ -71,14 +71,14 @@ part1 = length . filter validPassport1
 part2 :: [B.ByteString] -> Int
 part2 = length . filter validPassport2
 
-splitOn' :: B.ByteString -> B.ByteString -> [B.ByteString]
-splitOn' _ bs | B.null bs = []
-splitOn' del bs =
-  case B.breakSubstring del bs of
-    (ls, rest) ->
-      if B.null rest
-        then ls : mempty
-        else ls : splitOn' del (B.tail rest)
+splitOn' del bs = go bs
+  where
+    n = B.length del
+    go bs = case B.breakSubstring del bs of
+              (ls, rest) ->
+                if B.null rest
+                  then ls : mempty
+                  else ls : splitOn' del (B.drop n rest)
 
 main = do
   let dayNumber = 4 :: Int

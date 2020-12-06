@@ -5,12 +5,14 @@ import Criterion.Main
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Set as S
 
-splitOn' del bs =
-  case B.breakSubstring del bs of
-    (ls, rest) ->
-      if B.null rest
-        then ls : mempty
-        else ls : splitOn' del (B.tail rest)
+splitOn' del bs = go bs
+  where
+    n = B.length del
+    go bs = case B.breakSubstring del bs of
+              (ls, rest) ->
+                if B.null rest
+                  then ls : mempty
+                  else ls : splitOn' del (B.drop n rest)
 
 part1 ls = sum [S.size $ S.unions l | l <- ls]
 part2 ls = sum [S.size $ foldr1 S.intersection l | l <- ls]

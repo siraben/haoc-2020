@@ -11,6 +11,15 @@ part1, part2 :: [B.ByteString] -> Int
 part1 i = undefined
 part2 i = undefined
 
+splitOn' del bs = go bs
+  where
+    n = B.length del
+    go bs = case B.breakSubstring del bs of
+              (ls, rest) ->
+                if B.null rest
+                  then ls : mempty
+                  else ls : splitOn' del (B.drop n rest)
+
 main = do
   let dayNumber = undefined :: Int -- FIXME: change day number
   let dayString = "day" <> show dayNumber
