@@ -20,7 +20,7 @@ part1 :: [[Int]] -> Int
 part1 ls = sum [popCount $ foldl1' (.|.) l | l <- ls]
 
 part2 :: [[Int]] -> Int
-part2 ls = sum [popCount $ foldl1 (.&.) l | l <- ls]
+part2 ls = sum [popCount $ foldl1' (.&.) l | l <- ls]
 
 main = do
   let dayNumber = 6 :: Int

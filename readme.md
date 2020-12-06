@@ -165,17 +165,17 @@ std dev              188.9 ns   (109.6 ns .. 276.3 ns)
 
 ```
 benchmarking day6/part1
-time                 11.55 μs   (11.44 μs .. 11.76 μs)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 11.64 μs   (11.54 μs .. 11.81 μs)
-std dev              425.6 ns   (274.0 ns .. 606.5 ns)
-variance introduced by outliers: 44% (moderately inflated)
+time                 13.47 μs   (13.30 μs .. 13.67 μs)
+                     0.997 R²   (0.996 R² .. 0.998 R²)
+mean                 14.08 μs   (13.79 μs .. 14.41 μs)
+std dev              1.105 μs   (919.3 ns .. 1.464 μs)
+variance introduced by outliers: 79% (severely inflated)
 
 benchmarking day6/part2
-time                 12.46 μs   (12.36 μs .. 12.63 μs)
+time                 12.00 μs   (11.94 μs .. 12.08 μs)
                      0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 12.45 μs   (12.40 μs .. 12.55 μs)
-std dev              214.4 ns   (114.6 ns .. 404.0 ns)
-variance introduced by outliers: 15% (moderately inflated)
+mean                 12.15 μs   (12.04 μs .. 12.41 μs)
+std dev              536.6 ns   (266.7 ns .. 981.4 ns)
+variance introduced by outliers: 53% (severely inflated)
 ```
 </details>
