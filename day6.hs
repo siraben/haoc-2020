@@ -9,12 +9,13 @@ splitOn' del bs = go bs
   where
     n = B.length del
     go bs = case B.breakSubstring del bs of
-              (ls, rest) ->
-                if B.null rest
-                  then ls : mempty
-                  else ls : splitOn' del (B.drop n rest)
+      (ls, rest) ->
+        if B.null rest
+          then ls : mempty
+          else ls : splitOn' del (B.drop n rest)
 
 part1 ls = sum [S.size $ S.unions l | l <- ls]
+
 part2 ls = sum [S.size $ foldr1 S.intersection l | l <- ls]
 
 main = do
@@ -22,7 +23,7 @@ main = do
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
   inp <- B.readFile dayFilename
-  let inp' = (S.fromList . B.unpack <$>) . B.words . B.unwords . B.lines <$> splitOn' "\n\n" inp
+  let inp' = map (S.fromList . B.unpack) . B.lines <$> splitOn' "\n\n" inp
   print (part1 inp')
   print (part2 inp')
   defaultMain
