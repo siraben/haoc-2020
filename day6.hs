@@ -1,10 +1,11 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import Criterion.Main
+import Criterion.Main ( defaultMain, bench, bgroup, whnf )
 import qualified Data.ByteString.Char8 as B
-import qualified Data.IntSet as IS
 import Data.Char
+import Data.Bits 
+import Data.List
 
 splitOn' del bs = go bs
   where
@@ -15,16 +16,19 @@ splitOn' del bs = go bs
           then ls : mempty
           else ls : splitOn' del (B.drop n rest)
 
-part1 ls = sum [IS.size $ IS.unions l | l <- ls]
+part1 :: [[Int]] -> Int
+part1 ls = sum [popCount $ foldl1' (.|.) l | l <- ls]
 
-part2 ls = sum [IS.size $ foldr1 IS.intersection l | l <- ls]
+part2 :: [[Int]] -> Int
+part2 ls = sum [popCount $ foldl1 (.&.) l | l <- ls]
 
 main = do
   let dayNumber = 6 :: Int
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
   inp <- B.readFile dayFilename
-  let inp' = map (IS.fromList . map ord . B.unpack) . B.lines <$> splitOn' "\n\n" inp
+  let fromStr' = foldl1' (.|.) . map (bit . subtract (ord 'a') . ord)
+  let inp' = map (fromStr' . B.unpack) . B.lines <$> splitOn' "\n\n" inp
   print (part1 inp')
   print (part2 inp')
   defaultMain
