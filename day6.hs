@@ -27,7 +27,7 @@ main = do
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
   inp <- B.readFile dayFilename
-  let fromStr' = foldl1' (.|.) . map (bit . subtract (ord 'a') . ord)
+  let fromStr' = foldl1' (.|.) . map (bit . (.&. 31) . ord)
   let inp' = map (fromStr' . B.unpack) . B.lines <$> splitOn' "\n\n" inp
   print (part1 inp')
   print (part2 inp')
