@@ -37,24 +37,14 @@ instance Ord Wat where
 
 parseLine :: BT.Parser _
 parseLine = do
-  source <- colPair
-  ident "bags"
-  ident "contain"
+  source <- colPair <* ident "bags contain"
   things <-
-    (string "no other bags" Data.Functor.$> [])
-      <|> (bar `sepBy` ident ",")
+    (string "no other bags" $> [])
+      <|> ((((,) <$> tok nat <*> colPair) <* (string "bag" <* optional (string "s"))) `sepBy` ident ",")
   string "."
   pure (source, W (0, source), W <$> things)
-  where
-    bar = do
-      n <- tok nat
-      c <- colPair
-      try (string "bags") <|> string "bag"
-      pure (n, c)
 
 doit = parse parseLine ""
-
-countIf f = length . filter f
 
 part1 :: [(node, Wat, [Wat])] -> Int
 part1 pres = length (G.reachable (G.transposeG g) sg) - 1
