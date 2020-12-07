@@ -11,6 +11,7 @@ import Data.Functor
 import qualified Data.Graph as G
 import Text.Parsec
 import qualified Text.Parsec.ByteString as BT
+import Data.Semigroup
 
 tok p = p <* space
 
@@ -25,16 +26,6 @@ colPair = do
   [a, b] <- count 2 word
   pure $ concat [a, "-", b]
 
-newtype Wat = W (Int, String) deriving (Show)
-
-unW (W x) = x
-
-instance Eq Wat where
-  (==) = (==) `on` (snd . unW)
-
-instance Ord Wat where
-  compare = compare `on` (snd . unW)
-
 parseLine :: BT.Parser _
 parseLine = do
   source <- colPair <* ident "bags contain"
@@ -42,31 +33,35 @@ parseLine = do
     (string "no other bags" $> [])
       <|> ((((,) <$> tok nat <*> colPair) <* (string "bag" <* optional (string "s"))) `sepBy` ident ",")
   string "."
-  pure (source, W (0, source), W <$> things)
+  pure (source, Arg source 0, uncurry Arg . swap <$> things)
+    where
+      swap (a,b) = (b,a)
 
 doit = parse parseLine ""
 
-part1 :: [(node, Wat, [Wat])] -> Int
+type Vertex = Arg String Int
+
+part1 :: [(node, Vertex, [Vertex])] -> Int
 part1 pres = length (G.reachable (G.transposeG g) sg) - 1
   where
     (g, _, f) = G.graphFromEdges pres
-    Just sg = f (W (1, "shiny-gold"))
+    Just sg = f (Arg "shiny-gold" 1)
 
-part2 :: [(a, Wat, [Wat])] -> Int
-part2 pres = bagsContainedBy i (W (1, "shiny-gold")) - 1
+part2 :: [(a, Vertex, [Vertex])] -> Int
+part2 pres = bagsContainedBy i (Arg "shiny-gold" 1) - 1
   where
     i = G.graphFromEdges pres
 
 -- g, the graph itself
 -- h, function from vertex to (node, key, [key])
 -- f, key -> Maybe vertex
-bagsContainedBy i@(_, h, f) x@(W (n, _)) = n + sum (map recurse cs)
+bagsContainedBy i@(_, h, f) x@(Arg _ n) = n + sum (map recurse cs)
   where
     -- Current vertex number
     Just v = f x
     -- Children
     (_, _, cs) = h v
-    recurse (W (m, s)) = bagsContainedBy i (W (n * m, s))
+    recurse (Arg s m)  = bagsContainedBy i (Arg s (n * m))
 
 main = do
   let dayNumber = 7 :: Int
