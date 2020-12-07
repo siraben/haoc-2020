@@ -57,7 +57,7 @@ doit = parse parseLine ""
 countIf f = length . filter f
 
 part1 :: [(node, Wat, [Wat])] -> Int
-part1 pres = countIf (\v -> G.path g v sg) (G.vertices g) - 1
+part1 pres = length (G.reachable (G.transposeG g) sg) - 1
   where
     (g, _, f) = G.graphFromEdges pres
     Just sg = f (W (1, "shiny-gold"))
