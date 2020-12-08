@@ -61,8 +61,8 @@ main = do
   let dayNumber = 8 :: Int
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
-  inp <- (splitAt 3 <$>) . lines <$> readFile dayFilename
-  let prog = map (\(x, y) -> (x, read y :: Int)) inp
+  inp <- lines <$> readFile dayFilename
+  let prog = map ((\[x, y] -> (x, read (dropWhile (== '+') y) :: Int)) . words) inp
   let inp' = M.fromList (zip [0 ..] prog)
   print (part1 inp')
   print (part2 (inp', prog))
