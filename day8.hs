@@ -1,9 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE TypeApplications #-}
-{-# OPTIONS_GHC -Wno-partial-type-signatures #-}
 
 import Control.Monad.State
 import Criterion.Main
@@ -14,33 +11,27 @@ import qualified Data.Map as M
 -- string is nop, acc, jump
 type Inst = (String, Int)
 
-type Prog a = State (Int, Int, IS.IntSet, M.Map Int Inst) a
+data ProgState = ProgState {pc :: !Int, a :: !Int, vs :: IS.IntSet, is :: M.Map Int Inst}
+
+type Prog a = State ProgState a
+
+data HaltState = Loop | Exit deriving (Show, Eq)
 
 tick :: Prog ()
-tick = do
-  (pc, a, vs, is) <- get
-  put (pc + 1, a, vs, is)
+tick = modify (\s -> s {pc = pc s + 1})
 
 acc :: Int -> Prog ()
-acc n = do
-  (pc, a, vs, is) <- get
-  put (pc + 1, a + n, vs, is)
+acc n = modify (\s -> s {pc = pc s + 1, a = a s + n})
 
 mark :: Int -> Prog ()
-mark x = do
-  (pc, a, vs, is) <- get
-  put (pc, a, IS.insert x vs, is)
+mark x = modify (\s -> s {vs = IS.insert x (vs s)})
 
 jmp :: Int -> Prog ()
-jmp n = do
-  (pc, a, vs, is) <- get
-  put (pc + n, a, vs, is)
+jmp n = modify (\s -> s {pc = pc s + n})
 
-data PS = Loop | Exit deriving (Show, Eq)
-
-exec :: Prog (Int, PS)
+exec :: Prog (Int, HaltState)
 exec = do
-  (pc, a, vs, is) <- get
+  ProgState {pc, a, vs, is} <- get
   if pc == M.size is
     then pure (a, Exit)
     else do
@@ -55,9 +46,10 @@ exec = do
             ("jmp", n) -> jmp n
           exec
 
-execInit p is = evalState p (0, 0, mempty, is)
+execInit p is = evalState p (ProgState 0 0 mempty is)
 
 part1 = execInit exec
+
 part2 (inp', prog) = filter ((== Exit) . snd) (execInit exec <$> (nopProgs <> jmpProgs))
   where
     nops = findIndices ((== "nop") . fst) prog
