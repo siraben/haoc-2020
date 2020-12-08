@@ -2,10 +2,9 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import Control.Monad.State
+import Control.Monad.State.Strict
 import Criterion.Main
 import qualified Data.IntSet as IS
-import Data.List
 import qualified Data.Map as M
 
 -- string is nop, acc, jump
@@ -50,12 +49,12 @@ execInit p is = evalState p (ProgState 0 0 mempty is)
 
 part1 = execInit exec
 
-part2 (inp', prog) = filter ((== Exit) . snd) (execInit exec <$> (nopProgs <> jmpProgs))
+part2 inp' = head [a | is' <- nopProgs, let (a, s) = execInit exec is', s == Exit]
   where
-    nops = findIndices ((== "nop") . fst) prog
-    jmps = findIndices ((== "jmp") . fst) prog
-    nopProgs = [M.insert i ("jmp", a) inp' | i <- nops, let (_, a) = inp' M.! i]
-    jmpProgs = [M.insert i ("nop", a) inp' | i <- jmps, let (_, a) = inp' M.! i]
+    change "nop" = "jmp"
+    change "jmp" = "nop"
+    change a = a
+    nopProgs = [M.update (\(x, y) -> Just (change x, y)) i inp' | i <- [0 .. M.size inp' - 1]]
 
 main = do
   let dayNumber = 8 :: Int
@@ -65,11 +64,11 @@ main = do
   let prog = map ((\[x, y] -> (x, read (dropWhile (== '+') y) :: Int)) . words) inp
   let inp' = M.fromList (zip [0 ..] prog)
   print (part1 inp')
-  print (part2 (inp', prog))
+  print (part2 inp')
   defaultMain
     [ bgroup
         dayString
         [ bench "part1" $ whnf part1 inp',
-          bench "part2" $ whnf part2 (inp', prog)
+          bench "part2" $ whnf part2 inp'
         ]
     ]
