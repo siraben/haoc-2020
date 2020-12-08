@@ -6,7 +6,6 @@
 
 import Criterion.Main
 import qualified Data.ByteString.Char8 as B
-import Data.Function
 import Data.Functor
 import qualified Data.Graph as G
 import Text.Parsec
