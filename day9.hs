@@ -16,12 +16,13 @@ part2 target inp = maxMinSum
   where
     inp' = V.scanl (+) 0 inp
     l = V.slice a (b - a) inp
-    maxMinSum = uncurry (+) (V.foldl' (\(a,b) n -> (min n a, max n b)) (maxBound,minBound) l)
+    maxMinSum = uncurry (+) (V.foldl' (\(a, b) n -> (min n a, max n b)) (maxBound, minBound) l)
     (a, b) = go 0 0
-    go !i !j  = case compare s target of
-                   EQ -> (i,j)
-                   LT -> go i (succ j)
-                   GT -> go (succ i) j
+    go !i !j =
+      case compare s target of
+        EQ -> (i, j)
+        LT -> go i (succ j)
+        GT -> go (succ i) j
       where
         s = inp' V.! j - inp' V.! i
 
