@@ -111,12 +111,13 @@ main = do
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
   inp <- lines <$> readFile dayFilename
-  print (part1 inp)
-  print (part2 inp)
-  defaultMain
-    [ bgroup
-        dayString
-        [ bench "part1" $ whnf part1 inp,
-          bench "part2" $ whnf part2 inp
-        ]
-    ]
+  print (take 10 inp)
+  -- print (part1 inp)
+  -- print (part2 inp)
+  -- defaultMain
+  --   [ bgroup
+  --       dayString
+  --       [ bench "part1" $ whnf part1 inp,
+  --         bench "part2" $ whnf part2 inp
+  --       ]
+  --   ]

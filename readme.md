@@ -41,6 +41,33 @@ rough procedure on how to tackle the problems.
 Of course with (3) one could continue shaving off more and more time,
 though these heuristics in practice have given me most of the gains.
 
+## Writing Haskell for AoC quickly
+Over a week in, it's becoming clearer how to do better at AoC, the
+principle is
+
+> a naive (but possibly inefficient) solution that is quick to write
+> better than an optimized one that is slow to write
+
+From this principle, it informs my choices on how to write Haskell
+quickly for the initial solve.
+
+- put everything in main, variables/expressions used more than once go
+  in a `let` expression, use a short, random identifier unless you can
+  think of a good one within 3 seconds
+- for mapping over lists, use `<$>`, but if you need to filter, use
+  `let` expressions or iterate over a cartesian product of lists, list
+  comprehensions/monadic syntax is better
+- never discard parts of input even if it makes part 1 faster to
+  solve, since almost always part 2 will use that information and
+  you'll have to adjust the `String -> data` step again
+- avoid explicit recursion when possible, or at the least use tail
+  recursion with a function named `go`
+- print intermediate results as you process data, especially if the
+  transformation is complex, so `do { let a = f x; print a; let b = g
+  a; ... }` over `do { print (f (g x)) }`
+- if using the state monad (should be a last resort), use a record for
+  the state
+
 ## Best benchmarks so far
 TODO: automatically generate report
 <details>
