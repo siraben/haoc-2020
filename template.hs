@@ -91,6 +91,9 @@ pertubationsBy p f l = [setAt n (f x) l | (x, n) <- findIndicesElem p l]
 pertubations :: (a -> a) -> [a] -> [[a]]
 pertubations = pertubationsBy (const True)
 
+-- | Generate all the segments of a list, O(n^2)
+segs :: [a] -> [[a]]
+segs = concatMap tails . inits
 
 -- | Repeat a function until you get the same result twice.
 fixedPoint :: Eq a => (a -> a) -> a -> a
