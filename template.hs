@@ -35,6 +35,9 @@ splitOn' del bs = go bs
           then ls : mempty
           else ls : splitOn' del (B.drop n rest)
 
+countIf f = length . filter f
+findFirst f = fromJust . find f
+
 part1, part2 :: _ -> Int
 part1 i = undefined
 part2 i = undefined

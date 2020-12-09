@@ -3,6 +3,7 @@
 
 import Data.List
 import Data.Maybe
+import Criterion.Main
 
 part1 :: [Int] -> Int
 part1 inp' = head (snd (fromJust (find (\(p,r) -> isNotValid p (head r)) (splitAt 25 <$> iterate (drop 1) inp'))))
@@ -23,10 +24,10 @@ main = do
   let n = part1 inp'
   print n
   print (part2 n inp')
-  -- defaultMain
-  --   [ bgroup
-  --       dayString
-  --       [ bench "part1" $ whnf part1 inp,
-  --         bench "part2" $ whnf part2 inp
-  --       ]
-  --   ]
+  defaultMain
+    [ bgroup
+        dayString
+        [ bench "part1" $ whnf part1 inp',
+          bench "part2" $ whnf (part2 n) inp'
+        ]
+    ]

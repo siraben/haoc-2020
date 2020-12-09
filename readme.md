@@ -218,3 +218,22 @@ mean                 12.07 ms   (11.97 ms .. 12.23 ms)
 std dev              322.7 μs   (211.3 μs .. 509.9 μs)
 ```
 </details>
+
+### Day 9
+<details>
+
+```
+benchmarking day9/part1
+time                 377.7 μs   (374.8 μs .. 381.1 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 378.1 μs   (375.8 μs .. 381.3 μs)
+std dev              8.728 μs   (7.155 μs .. 10.36 μs)
+variance introduced by outliers: 15% (moderately inflated)
+
+benchmarking day9/part2
+time                 50.67 ms   (49.78 ms .. 51.43 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 50.13 ms   (49.95 ms .. 50.42 ms)
+std dev              475.1 μs   (310.0 μs .. 706.6 μs)
+```
+</details>
