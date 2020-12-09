@@ -38,6 +38,9 @@ splitOn' del bs = go bs
 countIf f = length . filter f
 findFirst f = fromJust . find f
 
+slidingWindows :: Int -> [Int] -> [[Int]]
+slidingWindows n l = take n <$> tails l
+
 part1, part2 :: _ -> Int
 part1 i = undefined
 part2 i = undefined

@@ -1,15 +1,36 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Monad
 import Criterion.Main
+import Data.Bifunctor
+import Data.Foldable (toList)
 import Data.List
 import Data.Maybe
+import qualified Data.Sequence as Q
 import qualified Data.Vector as V
 
-part1 :: [Int] -> Int
-part1 inp' = head (snd (fromJust (find (\(p, r) -> isNotValid p (head r)) (splitAt 25 <$> tails inp'))))
+-- credits to https://github.com/mstksg/advent-of-code-2020/blob/master/src/AOC/Challenge/Day09.hs
+slidingWindows :: Int -> [Int] -> [Q.Seq Int]
+slidingWindows n = uncurry go . first Q.fromList . splitAt n
   where
-    isNotValid p n = null [(x, y) | x <- p, y <- p, x + y == n]
+    go ws@(_ Q.:<| qs) = \case
+      x : xs -> ws : go (qs Q.:|> x) xs
+      [] -> [ws]
+    go _ = const []
+
+part1 :: [Int] -> Int
+part1 xs = fromJust $ do
+  _ Q.:|> x <- find isBad (slidingWindows 26 xs)
+  pure x
+  where
+    isBad :: Q.Seq Int -> Bool
+    isBad (xs Q.:|> x) = null $ do
+      y : ys <- tails (toList xs)
+      z <- ys
+      guard $ (y + z) == x
+    isBad _ = True
 
 part2 :: Int -> V.Vector Int -> Int
 part2 target inp = maxMinSum
