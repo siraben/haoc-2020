@@ -11,21 +11,19 @@ part1 inp' = head (snd (fromJust (find (\(p, r) -> isNotValid p (head r)) (split
   where
     isNotValid p n = null [(x, y) | x <- p, y <- p, x + y == n]
 
-{-
-  (\l -> minimum l + maximum l) (fromJust (find ((== target) . sum) (segs inp')))
-= head (map (\l -> minimum l + maximum l) (filter ((== target) . sum) (segs inp')))
-= head (map (\l -> minimum l + maximum l) (filter ((== target) . sum) (segs inp')))
-
-= head (foldr (\x y -> if sum x == target then (minimum x + maximum x):y else y) [] (concat (map tails (inits inp'))))
--- seems stuck
--}
 part2 :: Int -> V.Vector Int -> Int
-part2 target inp = minimum l + maximum l
+part2 target inp = maxMinSum
   where
     inp' = V.scanl (+) 0 inp
     l = V.slice a (b - a) inp
-    n = length inp'
-    (a, b) = head [(i, j) | i <- [0 .. n - 1], j <- [i .. n - 1], inp' V.! j - inp' V.! i == target]
+    maxMinSum = uncurry (+) (V.foldl' (\(a,b) n -> (min n a, max n b)) (maxBound,minBound) l)
+    (a, b) = go 0 0
+    go !i !j  = case compare s target of
+                   EQ -> (i,j)
+                   LT -> go i (succ j)
+                   GT -> go (succ i) j
+      where
+        s = inp' V.! j - inp' V.! i
 
 main = do
   let dayNumber = 9
