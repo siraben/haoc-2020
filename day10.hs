@@ -1,11 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Criterion.Main
 import Data.Foldable
 import Data.Function
+import qualified Data.IntMap as IM
+import qualified Data.IntSet as IS
 import Data.List
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Criterion.Main
 
 valid a b = (b - a) <= 3
 
@@ -34,15 +36,21 @@ part1 inp' = countTrue (3 ==) ds * countTrue (1 ==) ds
   where
     ds = zipWith (-) (tail inp') inp'
 
-part2 (inp', final) =
-  foo
-    final
-    ( \arr start ->
-        if start == final
-          then 1
-          else sum [arr (start + i) | i <- [1 .. 3], start + i `elem` inp']
-    )
-    0
+part2 = findElseZero 0 . pathsToGoal . IS.fromList
+
+findElseZero = IM.findWithDefault 0
+
+pathsToGoal :: IS.IntSet -> IM.IntMap Int
+pathsToGoal is = res
+  where
+    res = (`IM.fromSet` is) $ \i ->
+      if i == goal
+        then 1
+        else
+          findElseZero (i + 1) res
+            + findElseZero (i + 2) res
+            + findElseZero (i + 3) res
+    goal = IS.findMax is
 
 main = do
   let dayNumber = 10
@@ -52,12 +60,11 @@ main = do
   let final = maximum inp + 3
   let inp' = 0 : sort inp ++ [final]
   print (part1 inp')
-  print (part2 (inp', final))
+  print (part2 inp')
   defaultMain
     [ bgroup
         dayString
         [ bench "part1" $ whnf part1 inp',
-          bench "part2" $ whnf part2 (inp', final)
+          bench "part2" $ whnf part2 inp'
         ]
     ]
-  
