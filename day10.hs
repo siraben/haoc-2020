@@ -52,23 +52,23 @@ foo target f = fix (\x -> f (M.fromSet x keys M.!))
   where
     keys = S.fromList [0 .. target]
 
+-- | Count the number of items in a container where the predicate is true.
+countTrue :: Foldable f => (a -> Bool) -> f a -> Int
+countTrue p = length . filter p . toList
+
 main = do
   let dayNumber = 10
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
   inp <- (read <$>) . lines <$> readFile dayFilename :: IO [Int]
-  let inp' = sort inp
-  let inp'' = (zipWith (-) <*> tail) inp'
-  let a = length [x | x <- inp'', x == -3]
-  let b = length [x | x <- inp'', x == -1]
-  print (a, b)
-  print (uncurry (*) (a + 1, b + 1))
-  let final = maximum inp' + 3
-  let nums = (0 : inp') ++ [final]
+  let final = maximum inp + 3
+  let inp' = 0:sort inp ++ [final]
+  let ds = zipWith (-) (tail inp') inp'
+  print (countTrue (3==) ds * countTrue (1==) ds)
   let part2_sol = foo final $ \arr start ->
         if start == final
           then 1
-          else sum [arr (start + i) | i <- [1 .. 3], start + i `elem` nums]
+          else sum [arr (start + i) | i <- [1 .. 3], start + i `elem` inp']
   print (part2_sol 0)
 
 -- defaultMain
