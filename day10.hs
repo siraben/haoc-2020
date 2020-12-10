@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 import Criterion.Main
@@ -10,8 +11,8 @@ part1 :: [Int] -> Int
 part1 inp' = uncurry (*) (foldl' f (0,0) ds)
   where
     ds = zipWith (-) (tail inp') inp'
-    f (a,b) 1 = (a+1,b)
-    f (a,b) 3 = (a,b+1)
+    f (!a,!b) 1 = (a+1,b)
+    f (!a,!b) 3 = (a,b+1)
 
 part2 :: [Int] -> Int
 part2 = findElseZero 0 . pathsToGoal . IS.fromList
