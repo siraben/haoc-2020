@@ -110,7 +110,7 @@ fixedPointC f = go 0
   where
     go n !x
         | x == y    = (x,n)
-        | otherwise = go (n + 1) y 
+        | otherwise = go (n + 1) y
       where
         y = f x
 
@@ -128,6 +128,32 @@ nextState r c g | x == 'L' && notElem '#' ns = '#'
     neighbors r c g = [cellRef (r + x) (c + y) g | x <- [-1..1], y <- [-1..1], (x,y) /= (0,0)]
     ns = neighbors r c g
 
+takeWhile1 p [] = []
+takeWhile1 p (x:ys) | p x = x:takeWhile1 p ys
+                    | otherwise = [x]
+
+nextState2 r c g | x == 'L' && notElem '#' ns = '#'
+                 | x == '#' && countTrue (== '#') ns >= 5 = 'L'
+                 | otherwise = x
+  where
+    cellRef r c g = (g M.! r) M.! c
+    x = cellRef r c g
+    notEnd c = c /= 'W'
+    ray xo yo r c = [cellRef x y g | (x,y) <- tail $ iterate (\(a,b) -> (xo + a, yo + b)) (r,c)]
+    -- ray xo yo r c = "WWWW"
+    neighbors r c g = concatMap (takeWhile1 (\x -> not (x == 'W' || x == 'L' || x == '#'))) [n,ne,e,se,s,sw,w,nw]
+      where
+        nw = ray (-1) 1 r c
+        n = ray 0 1 r c
+        ne = ray 1 1 r c
+        e  = ray 1 0 r c
+        se = ray 1 (-1) r c
+        s  =ray 0 (-1) r c
+        sw =  ray (-1) (-1) r c
+        w  =ray (-1) 0 r c
+
+    ns = neighbors r c g
+
 part1 inp = [[nextState  r c grid | c <- [1..nc]] | r <- [1..nr]]
   where
     (nr, nc) = (length inp, length (head inp))
@@ -137,7 +163,19 @@ part1 inp = [[nextState  r c grid | c <- [1..nc]] | r <- [1..nr]]
     cellRef r c g = (grid M.! r) M.! c
     -- ow we can simulate from (1,1) to (nr, nc)
     neighbors r c g = [cellRef (r + x) (c + y) g | x <- [-1..1], y <- [-1..1], (x,y) /= (0,0)]
+
   -- putStrLn (unlines [[cellRef  r c grid | c <- [1..nc]] | r <- [1..nr]])
+
+part2 inp = [[nextState2  r c grid | c <- [1..nc]] | r <- [1..nr]]
+  where
+    (nr, nc) = (length inp, length (head inp))
+    padLine l = 'W':l ++ ['W']
+    padded inp = padLine <$> ((replicate nc 'W'):inp ++ [replicate nc 'W'])
+    grid = M.fromList (zip [0..] (M.fromList . zip [0..] <$> (padded inp)))
+    cellRef r c g = (grid M.! r) M.! c
+    -- ow we can simulate from (1,1) to (nr, nc)
+    neighbors r c g = [cellRef (r + x) (c + y) g | x <- [-1..1], y <- [-1..1], (x,y) /= (0,0)]
+
 main = do
   let dayNumber = 11
   let dayString = "day" <> show dayNumber
@@ -145,8 +183,11 @@ main = do
   inp <- lines <$> readFile dayFilename
   -- let inp2 = unlines [[nextState r c grid | c <- [1..nc]] | r <- [1..nr]]
   print (countTrue (== '#') (unlines (fixedPoint part1 inp)))
+  print (countTrue (== '#') (unlines (fixedPoint part2 inp)))
+  -- putStrLn (unlines ((part2 inp)))
+  -- putStrLn (unlines (part2 (part2 inp)))
   -- putStrLn inp2
-  -- putStrLn (unlines [[nextState r c grid | c <- [1..nc]] | r <- [1..nr]])
+ --  putStrLn (unlines [[nextState r c grid | c <- [1..nc]] | r <- [1..nr]])
   -- print (padded (lines inp2))
   -- print (take 10 inp)
   -- print (part1 inp)
