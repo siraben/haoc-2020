@@ -285,3 +285,23 @@ std dev              591.3 ns   (468.3 ns .. 793.8 ns)
 variance introduced by outliers: 64% (severely inflated)
 ```
 </details>
+
+### Day 11
+<details>
+
+```
+benchmarking day11/part1
+time                 854.7 ms   (805.5 ms .. 902.9 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 888.3 ms   (871.0 ms .. 897.2 ms)
+std dev              16.43 ms   (758.0 μs .. 20.46 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking day11/part2
+time                 1.651 s    (950.4 ms .. 2.041 s)
+                     0.977 R²   (0.948 R² .. 1.000 R²)
+mean                 1.706 s    (1.582 s .. 1.820 s)
+std dev              132.7 ms   (110.3 ms .. 150.3 ms)
+variance introduced by outliers: 21% (moderately inflated)
+```
+</details>
