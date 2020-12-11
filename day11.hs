@@ -61,14 +61,13 @@ fixedPoint f = go
       where
         y = f x
 
-nextState r c g
-  | x == 'L' && notElem '#' ns = '#'
-  | x == '#' && countTrue (== '#') ns >= 4 = 'L'
-  | otherwise = x
+nextState s r c g
+  | s == 'L' && notElem '#' ns = '#'
+  | s == '#' && countTrue (== '#') ns >= 4 = 'L'
+  | otherwise = s
   where
     cellRef r c g = do x <- (g M.!? r)
                        x M.!? c
-    x = fromJust (cellRef r c g)
     neighbors r c g = catMaybes [cellRef (r + x) (c + y) g | x <- [-1 .. 1], y <- [-1 .. 1], (x, y) /= (0, 0)]
     ns = neighbors r c g
 
@@ -100,10 +99,8 @@ nextState2 r c g
 
 part1 = countTrue (== '#') . concat . (M.elems <$>) . M.elems . fixedPoint part1f
 
-part1f g = grid [[nextState r c g | c <- [0 .. nc - 1]] | r <- [0 .. nr - 1]]
-  where
-    (nr, nc) = (M.size g, M.size (g M.! 1))
-    grid inp = M.fromList (zip [0 ..] (M.fromList . zip [0 ..] <$> inp))
+part1f ::  Map Int (Map Int Char)  ->  Map Int (Map Int Char)
+part1f g = M.mapWithKey (\r m -> M.mapWithKey (\c s -> nextState s r c g ) m) g
 
 part2 = countTrue (== '#') . unlines . fixedPoint part2f
 
