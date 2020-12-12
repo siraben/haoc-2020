@@ -24,13 +24,13 @@ type Waypoint = (Int, Int)
 
 type ShipState2 = (ShipState, Waypoint)
 
-rotateRight (x, y) = (y, - x)
+rotateRN p 0 = p
+rotateRN (x,y) 1 = (y,-x)
+rotateRN (x,y) 2 = (-x,-y)
+rotateRN (x,y) 3 = (-y,x)
+rotateRN p n = rotateRN p (n `mod` 4)
 
-rotateLeft (x, y) = (- y, x)
-
-rotateRN p n = iterate rotateRight p !! n
-
-rotateLN p n = iterate rotateLeft p !! n
+rotateLN p n = rotateRN p (4 - (n `mod` 4))
 
 move2 :: ShipState2 -> (Char, Int) -> ShipState2
 move2 (s, (!wx, !wy)) ('N', n) = (s, (wx, wy + n))
