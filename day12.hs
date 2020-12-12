@@ -120,6 +120,26 @@ move ((x,y),W) ('F',n) = ((x-n,y),W)
 move ((x,y),d) ('R',a) = ((x,y),toEnum ((fromEnum d + (a `div` 90)) `mod` 4))
 move ((x,y),d) ('L',a) = ((x,y),toEnum ((fromEnum d + (4 - (a `div` 90))) `mod` 4))
 
+type Waypoint = (Int, Int)
+type ShipState2 = (ShipState, Waypoint)
+
+type Point = (Int,Int)
+rotateRight (x,y) = (y, -x)
+rotateLeft (x,y) = (-y, x)
+
+rotateRN p n = (iterate rotateRight p) !! n
+rotateLN p n = (iterate rotateLeft p) !! n
+
+vAdd (x,y) (a,b) = (x+a,y+b)
+move2 :: ShipState2 -> (Char, Int) -> ShipState2
+move2 (((x,y),d), (wx,wy)) ('N',n) = (((x,y),d), (wx,wy+n))
+move2 (((x,y),d), (wx,wy)) ('E',n) = (((x,y),d), (wx+n,wy))
+move2 (((x,y),d), (wx,wy)) ('S',n) = (((x,y),d), (wx,wy-n))
+move2 (((x,y),d), (wx,wy)) ('W',n) = (((x,y),d), (wx-n,wy))
+move2 (((x,y),d), (wx,wy)) ('F',n) = (((x+wx*n,y+wy*n),d), (wx,wy))
+move2 (((x,y),d), (wx,wy)) ('R',a) = (((x,y),d), rotateRN (wx,wy) (a `div` 90))
+move2 (((x,y),d), (wx,wy)) ('L',a) = (((x,y),d), rotateLN (wx,wy) (a `div` 90))
+
 -- Start working down here
 part1, part2 :: _ -> Int
 part1 i = undefined
@@ -131,10 +151,10 @@ main = do
   inp <- lines <$> readFile dayFilename
   let process l = (head l, read (tail l) :: Int)
   let init = ((0,0),E) :: ShipState
+  let init2 = (init, (10,1))
   let manDist (x,y) = abs x + abs y
-  -- print (scanl' move init (process <$> inp))
   print (manDist (fst (foldl' move init (process <$> inp) :: ShipState)))
-  -- print (take 10 (process <$> inp))
+  print (manDist (fst (fst (foldl' move2 init2 (process <$> inp)))))
   -- print (part1 inp)
   -- print (part2 inp)
   -- defaultMain
