@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE UnicodeSyntax, BangPatterns #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -30,6 +30,75 @@ import qualified Data.Text.IO as TIO
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Control.Monad
+
+-- |Extended Euclidean algorithm
+-- Given A,B, finds integers X,Y that satisfy Bézout's identity:
+--   A*X + B*Y = gcd(A,B)
+egcd a b = aux a b 1 0 0 1
+  where aux r 0  x y _  _  = (r,x,y)
+        aux r r' x y x' y' = aux r' r'' x' y' x'' y''
+          where r'' = r `rem` r'
+                q   = r `div` r'
+                x'' = x - q * x'
+                y'' = y - q * y'
+
+-- |Finds the modular multiplicative inverse of @a@ modulo @m@.
+-- Returns number X (iff it exists) that satisfy:
+--   X*A ≡ 1 (mod m).
+invert a m = case egcd a m of
+              (1,x,_) -> Just x
+              _       -> Nothing 
+
+-- Syntax sugar.
+
+-- |Solves a system of simultaneous congruences.
+-- Chinese Remainder theorem determines a number X:
+--   X ≡ a₀ (mod n₀)
+--   X ≡ a₁ (mod n₁)
+--   X ≡ a₂ (mod n₂)
+--   ...
+-- The input is a list of tuples: [(a₀,n₀), (a₁,n₁), (a₂,n₂)].
+--
+-- Note: On empty input, returns X ≡ 0 (mod 1).
+class ChineseRemainder r where
+  chineseRemainder ∷ [(Integer,Integer)] → r
+
+-- Result is a tuple (X,M): X ≡ M
+instance ChineseRemainder (Maybe (Integer,Integer)) where
+  chineseRemainder = foldM aux (0,1)
+    where aux (a,p) (b,q)
+              | (a-b) `rem` k == 0 = Just (x, kmn)
+              | otherwise          = Nothing
+              where k       = gcd p q
+                    m       = p `div` k
+                    n       = q `div` k
+                    (_,_,β) = k `egcd` (m*n)
+                    (_,_,δ) = m `egcd` q
+                    (_,_,ζ) = n `egcd` p
+                    kmn     = p*n
+                    x       = (a*β*m*n+a*δ*k*n+b*ζ*k*m) `rem` kmn
+
+-- Result is a number X: X ≡ M (where M is a gcd of given modulis).
+instance ChineseRemainder (Maybe Integer) where
+  chineseRemainder = fmap fst . (chineseRemainder ∷ [(Integer,Integer)] -> Maybe (Integer,Integer))
+
+-- Result is a tuple of infinite lists of integers Xs, Ys:
+--   ∀x∈Xs: x≥0, x ≡ X (mod M)
+--   ∀x∈Xs: y<0, y ≡ X (mod M)
+-- where X is a solution to a system of given simultaneous congruences.
+instance ChineseRemainder (Maybe ([Integer], [Integer])) where
+  chineseRemainder = fmap aux . chineseRemainder
+    where aux (x,m) | x<0       = ([x+m,x+2*m..], [x,x-m..])
+                    | otherwise = ([x,x+m..],     [x-m,x-2*m..])
+
+-- Result is an infinite list of integers Xs:
+--   ∀x∈Xs: x ≡ X (mod M)
+-- where X is a solution to a system of given simultaneous congruences.
+instance ChineseRemainder (Maybe [Integer]) where
+  chineseRemainder = fmap intertwine . chineseRemainder
+    where intertwine ([],_) = []
+          intertwine (_,[]) = []
+          intertwine ((x:xs),(y:ys)) = x:y:intertwine (xs,ys)
 
 -- Slow splitOn for prototyping
 splitOn :: String -> String -> [String]
@@ -109,6 +178,9 @@ fixedPoint f = go
 part1, part2 :: _ -> Int
 part1 i = undefined
 part2 i = undefined
+
+bar l = filter ((/= 0) . snd) (zipWith (\x n -> ((x - n) `mod` x, x)) l (head l:[1..]))
+
 main = do
   let dayNumber = 13
   let dayString = "day" <> show dayNumber
@@ -116,16 +188,24 @@ main = do
   inp <- lines <$> readFile dayFilename
   let target = 1002578
   let targetS = 939
-  let l' = [7,13,59,31,19] :: [Int]
-  let l = [19,37,751,29,13,23,431,41,17] :: [Int]
+  let l' = [7,13,59,31,19] :: [Integer]
+  let l = [19,37,751,29,13,23,431,41,17] :: [Integer]
+  let x = 0
+  let inp' = [19,x,x,x,x,x,x,x,x,x,x,x,x,37,x,x,x,x,x,751,x,29,x,x,x,x,x,x,x,x,x,x,13,x,x,x,x,x,x,x,x,x,23,x,x,x,x,x,x,x,431,x,x,x,x,x,x,x,x,x,41,x,x,x,x,x,x,17] :: [Integer]
+  print (bar inp')
   let foo n = (\x -> ((x * ((x + n) `div` x)) - n))
   let v = length l'
   print (foo target <$> l)
-  print (foo 3417 <$> [17,13,19])
-  print (foo 754018 <$> [67,7,59,61])
-  print (foo 779210 <$> [67,7,59,61])
-  -- print [x | x <- [1..]g, let a = foo x <$> l', a == [2..v]]
+  -- print (foo 3417 <$> [17,13,19])
+  -- print (foo 754018 <$> [67,7,59,61])
+  -- print (foo 933913 <$> [67,7,59,61])
+  print ((779210 `mod`) <$> [67,7,59,61]) -- 67,x,7,59,61
+  print ((754018 `mod`) <$> [67,7,59,61])
+  print ((933913 `mod`) <$> [67,7,59,61])
+  
+  -- print [x | x <- [1..], let a = foo x <$> l', a == [2..v]]
   -- print [foo x <$> l' | x <- [1..]]
+  print (head . filter (> 0) <$> chineseRemainder (bar inp') :: Maybe Integer)
   print ()
   -- print (take 10 inp)
   -- print (part1 inp)
