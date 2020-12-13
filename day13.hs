@@ -12,6 +12,7 @@ import Data.Functor
 import qualified Text.ParserCombinators.ReadP as P
 
 -- credits to https://gist.github.com/kgadek/5503271
+
 -- | Extended Euclidean algorithm
 --  Given A,B, finds integers X,Y that satisfy Bézout's identity:
 --    A*X + B*Y = gcd(A,B)
@@ -24,7 +25,6 @@ egcd a b = aux a b 1 0 0 1
         q = r `div` r'
         x'' = x - q * x'
         y'' = y - q * y'
-
 
 -- | Solves a system of simultaneous congruences.
 --  Chinese Remainder theorem determines a number X:
@@ -80,15 +80,15 @@ instance ChineseRemainder (Maybe [Integer]) where
       intertwine (_, []) = []
       intertwine (x : xs, y : ys) = x : y : intertwine (xs, ys)
 
-bar l = filter ((/= 0) . snd) (zipWith (\x n -> ((x - n) `mod` x, x)) l (head l : [1 ..]))
-
 part1 :: Integer -> [Integer] -> Integer
-part1 target inp' = uncurry (*) (minimumBy (compare `on` snd) (foo target <$> filter (/= 0) inp'))
+part1 target inp' = uncurry (*) (minimumBy (compare `on` snd) (f <$> filter (/= 0) inp'))
   where
-    foo n = \x -> (x, (x * ((x + n) `div` x)) - n)
+    f x = (x, x * ((x + target) `div` x) - target)
 
 part2 :: [Integer] -> Maybe Integer
-part2 inp' = head . filter (> 0) <$> chineseRemainder (bar inp') :: Maybe Integer
+part2 inp = head . filter (> 0) <$> chineseRemainder inp'
+  where
+    inp' = filter ((/= 0) . snd) (zipWith (\x n -> ((x - n) `mod` x, x)) inp (head inp : [1 ..]))
 
 main = do
   let dayNumber = 13
