@@ -7,9 +7,9 @@ import Control.Applicative
 import Control.Monad
 import Criterion.Main
 import Data.Foldable
-import Data.Function
 import Data.Functor
 import qualified Text.ParserCombinators.ReadP as P
+import Data.Ord
 
 -- credits to https://gist.github.com/kgadek/5503271
 
@@ -81,7 +81,7 @@ instance ChineseRemainder (Maybe [Integer]) where
       intertwine (x : xs, y : ys) = x : y : intertwine (xs, ys)
 
 part1 :: Integer -> [Integer] -> Integer
-part1 target inp' = uncurry (*) (minimumBy (compare `on` snd) (f <$> filter (/= 0) inp'))
+part1 target inp' = uncurry (*) (minimumBy (comparing snd) (f <$> filter (/= 0) inp'))
   where
     f x = (x, x - target `mod` x)
 
