@@ -83,7 +83,7 @@ instance ChineseRemainder (Maybe [Integer]) where
 part1 :: Integer -> [Integer] -> Integer
 part1 target inp' = uncurry (*) (minimumBy (compare `on` snd) (f <$> filter (/= 0) inp'))
   where
-    f x = (x, x * ((x + target) `div` x) - target)
+    f x = (x, x - target `mod` x)
 
 part2 :: [Integer] -> Maybe Integer
 part2 inp = head . filter (> 0) <$> chineseRemainder inp'
