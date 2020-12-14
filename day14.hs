@@ -14,13 +14,7 @@ data L = Mask String | Ass Int Int deriving (Show)
 parseLine = mem <|> mask
   where
     mask = P.string "mask = " *> (Mask <$> P.manyTill (P.char 'X' <|> P.char '1' <|> P.char '0') (P.char '\n'))
-    mem = do
-      P.string "mem["
-      l <- P.readS_to_P reads
-      P.string "] = "
-      r <- P.readS_to_P reads
-      P.char '\n'
-      pure (Ass l r)
+    mem = Ass <$> (P.string "mem[" *> P.readS_to_P reads) <*>  (P.string "] = " *> P.readS_to_P reads <* P.char '\n')
 
 type S = (String, IntMap Int)
 
