@@ -134,13 +134,34 @@ ev (m,arr) (Ass l r) = (m, IM.insert l val arr)
   where
     val = ref m r
 
--- ref :: String -> Int -> Int
+ref :: String -> Int -> Int
 ref l = foldl' g id l'
   where
     l' = zip [0..] (reverse l)
     g f (n,'X') = f
     g f (n,'0') = (\x -> f (clearBit x n))
     g f (n,'1') = (\x -> f (setBit x n))
+
+b True = '1'
+b False = '0'
+
+ref2 :: String -> Int -> [Int]
+ref2 l = foldl' g pure l'
+  where
+    l' = zip [0..] (reverse l)
+    g f (n,'X') = (\x -> f =<< [setBit x n,clearBit x n])
+    g f (n,'0') = f
+    g f (n,'1') = (\x -> f (setBit x n))
+
+-- foldInsert :: IntMap a -> [(Int,a)] -> IntMap a
+foldInsert m [] = m
+foldInsert m ((l,r):b) = foldInsert (IM.insert l r m) b
+
+-- ev2 :: S -> L -> S
+ev2 (m,arr) (Mask s) = (s, arr)
+ev2 (m,arr) (Ass l r) = (m, foldInsert arr vals)
+  where
+    vals = [(loc, r) | loc <- ref2 m l]
 
 main = do
   let dayNumber = 14 :: Int
@@ -150,6 +171,8 @@ main = do
   let (dat,_) = (last (P.readP_to_S (P.many parseLine) inp))
   let (_,res) = foldl' ev (mempty,mempty) dat
   print (sum (IM.elems res))
+  let (_,res2) = foldl' ev2 (mempty,mempty) dat
+  print (sum (IM.elems res2))
   print ()
   -- print (take 10 inp)
   -- print (part1 inp)
