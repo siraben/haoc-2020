@@ -149,9 +149,11 @@ step (m,t) n = if n `IM.notMember` m
                      Just (l1,l2) -> ((IM.insert res (t,l1) m,t+1),res)
                    
 
-iterN :: (a -> a) -> Int -> (a -> a)
-iterN f 0 = id
-iterN f n = iterN f (n -1) . f
+iterN :: (a -> a) -> Int -> a -> a
+iterN f = go
+  where
+    go 0 x = x
+    go n x = go (n - 1) (f x)
 
 b = iterN iter
 startingState :: [Int] -> (State,Int)
@@ -170,13 +172,45 @@ naive (l@(x:xs)) = if length (take 2 hist) < 2 then 0:l else res:l
     hist = findIndices (== x) l
     -- most recent time spoken
     res = hist !! 1 - hist !! 0
+    l' = a ++ filter (/= x) b
+      where
+        (a,b) = splitAt (1 + (hist !! 1)) l
 
 part1 inp' = head (iterN naive (2020 - length inp) inp)
   where
     inp = reverse inp'
-part2 inp' = head (iterN naive (30000000 - length inp) inp)
+
+data Dat = One Int | Two Int Int deriving Show
+type S = (IntMap Dat, Int)
+
+-- push :: Dat -> Int -> Dat
+push n (One i) = Two n i
+push n (Two a _) = Two n a
+pushM n Nothing = One n
+pushM n (Just x) = push n x
+
+initState l = (IM.fromList (zip l (One <$> [1..n])), length l)
   where
-    inp = reverse inp'
+     n = length l
+naive2 :: S -> Int -> (S,Int)
+naive2 (m,t) n = if fromMaybe 0 (len <$> hist) < 2
+                 then ((IM.insert 0 (case (m IM.!? 0) of
+                                       Nothing -> One (t + 1)
+                                       Just n -> push (t + 1) n
+                                       ) m, t+1),0)
+                 else ((IM.insert res (pushM (t+1) (m IM.!? res)) m,t+1),res)
+  where
+    len (One _) = 1
+    len (Two _ _) = 2
+    hist = IM.lookup n m
+    ext (Two a b) = a - b
+    hist' = fromJust hist
+    res = ext hist'
+    -- most recent time spoken
+    -- res = hist !! 1 - hist !! 0
+
+part2 inp = snd (iterN (uncurry naive2) ((30000000 - length inp)) (initState inp,0))
+
 main = do
   let dayNumber = 15
   let dayString = "day" <> show dayNumber
