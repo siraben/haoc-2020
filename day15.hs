@@ -1,50 +1,29 @@
 {-# LANGUAGE BangPatterns #-}
 
 import Data.IntMap (IntMap)
-import qualified Data.IntMap as IM
-import Data.Maybe
+import qualified Data.IntMap.Strict as IM
 import Criterion.Main
+import Data.List
 
-iterN :: (a -> a) -> Int -> a -> a
-iterN f = go
+--        seen       time   last
+data S = S { seen :: !(IntMap Int), time :: !Int, prev :: !Int }
+
+initState (x:xs) = foldl' f (S mempty 0 x) xs
   where
-    go 0 x = x
-    go !n x = go (n - 1) (f x)
+    f (S m t prev) x = S (IM.insert prev t m) (t+1) x
 
-data Dat = One Int | Two Int Int deriving (Show)
-
-type S = (IntMap Dat, Int)
-
-push n (One i) = Two n i
-push n (Two a _) = Two n a
-
-pushM n Nothing = One n
-pushM n (Just x) = push n x
-
-initState l = (IM.fromList (zip l (One <$> [1 .. n])), length l)
+step :: S -> S
+step (S m t prev) = S (IM.insert prev t m) (t+1) res
   where
-    n = length l
+    res = case m IM.!? prev of
+      Nothing -> 0
+      Just n -> t - n
 
-naive2 :: S -> Int -> (S, Int)
-naive2 (m, t) n =
-  if maybe 0 len hist < 2
-    then ((IM.insert 0 ent m, t + 1), 0)
-    else ((IM.insert res (pushM (t + 1) (m IM.!? res)) m, t + 1), res)
-  where
-    ent =
-      case m IM.!? 0 of
-        Nothing -> One (t + 1)
-        Just n -> push (t + 1) n
-    len (One _) = 1
-    len (Two _ _) = 2
-    hist = IM.lookup n m
-    ext (Two a b) = a - b
-    hist' = fromJust hist
-    res = ext hist'
+iter 0 x = x
+iter n x = iter (n-1) $! step x
 
-part1 inp = snd (iterN (uncurry naive2) (2020 - length inp) (initState inp, 0))
-
-part2 inp = snd (iterN (uncurry naive2) (30000000 - length inp) (initState inp, 0))
+part1 inp = prev (iter (2020 - length inp) (initState inp))
+part2 inp = prev (iter (30000000 - length inp) (initState inp))
 
 main = do
   let inp = [0, 13, 1, 16, 6, 17]
