@@ -1,5 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE TupleSections #-}
@@ -7,6 +8,8 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wno-partial-type-signatures -fdefer-typed-holes -fno-warn-unused-imports #-}
 
+import Control.Applicative
+import Control.Monad
 import Criterion.Main
 import Data.Bifunctor
 import Data.Bits
@@ -18,6 +21,7 @@ import Data.Function
 import qualified Data.Graph as G
 import Data.IntSet (IntSet)
 import qualified Data.IntSet as IS
+import Data.Ix
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -29,7 +33,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Data.Vector (Vector)
 import qualified Data.Vector as V
-import Control.Monad
+import qualified Text.ParserCombinators.ReadP as P
 
 -- Slow splitOn for prototyping
 splitOn :: String -> String -> [String]
@@ -100,8 +104,8 @@ fixedPoint :: Eq a => (a -> a) -> a -> a
 fixedPoint f = go
   where
     go !x
-        | x == y    = x
-        | otherwise = go y
+      | x == y = x
+      | otherwise = go y
       where
         y = f x
 
