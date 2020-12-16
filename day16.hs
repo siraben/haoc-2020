@@ -5,38 +5,37 @@
 import Criterion.Main
 import Data.IntSet (IntSet)
 import qualified Data.IntSet as IS
+import Data.Ix
 import Data.List
 import Data.Maybe
 import qualified Text.ParserCombinators.ReadP as P
 
-data Range = Range Int Int deriving (Show)
+type Range = (Int, Int)
 
 cR :: Range -> Range -> (Int -> Bool)
-cR (Range l1 h1) (Range l2 h2) n = within n l1 h1 || within n l2 h2
-  where
-    within n a b = a <= n && n <= b
+cR (l1, h1) (l2, h2) n = inRange (l1, h1) n || inRange (l2, h2) n
 
 ranges =
-  [ Range 25 80 `cR` Range 90 961,
-    Range 41 133 `cR` Range 148 968,
-    Range 48 425 `cR` Range 451 952,
-    Range 25 371 `cR` Range 384 966,
-    Range 49 531 `cR` Range 546 973,
-    Range 45 641 `cR` Range 656 954,
-    Range 43 357 `cR` Range 364 969,
-    Range 40 669 `cR` Range 689 954,
-    Range 40 550 `cR` Range 570 956,
-    Range 49 854 `cR` Range 863 953,
-    Range 48 601 `cR` Range 614 964,
-    Range 27 698 `cR` Range 715 962,
-    Range 38 781 `cR` Range 800 970,
-    Range 47 824 `cR` Range 842 965,
-    Range 45 219 `cR` Range 241 955,
-    Range 47 388 `cR` Range 401 954,
-    Range 42 906 `cR` Range 919 965,
-    Range 40 726 `cR` Range 733 955,
-    Range 27 161 `cR` Range 174 974,
-    Range 48 103 `cR` Range 110 954
+  [ (25, 80) `cR` (90, 961),
+    (41, 133) `cR` (148, 968),
+    (48, 425) `cR` (451, 952),
+    (25, 371) `cR` (384, 966),
+    (49, 531) `cR` (546, 973),
+    (45, 641) `cR` (656, 954),
+    (43, 357) `cR` (364, 969),
+    (40, 669) `cR` (689, 954),
+    (40, 550) `cR` (570, 956),
+    (49, 854) `cR` (863, 953),
+    (48, 601) `cR` (614, 964),
+    (27, 698) `cR` (715, 962),
+    (38, 781) `cR` (800, 970),
+    (47, 824) `cR` (842, 965),
+    (45, 219) `cR` (241, 955),
+    (47, 388) `cR` (401, 954),
+    (42, 906) `cR` (919, 965),
+    (40, 726) `cR` (733, 955),
+    (27, 161) `cR` (174, 974),
+    (48, 103) `cR` (110, 954)
   ]
 
 rangesA = zip [0 ..] ranges
