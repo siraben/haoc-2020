@@ -2,11 +2,12 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+import Criterion.Main
+import Data.IntSet (IntSet)
 import qualified Data.IntSet as IS
 import Data.List
 import Data.Maybe
 import qualified Text.ParserCombinators.ReadP as P
-import Criterion.Main
 
 data Range = Range Int Int deriving (Show)
 
@@ -49,19 +50,22 @@ aaaa x = [n | (n, f) <- rangesA, f x]
 parseLine :: P.ReadP [Int]
 parseLine = P.sepBy (P.readS_to_P reads) (P.string ",") <* P.string "\n"
 
-backsol (n, (l, solset)) = (head $ IS.toList $ sols IS.\\ solset, (l', sols))
+backsol :: (Int, ([[Int]], IntSet)) -> (Int, ([[Int]], IntSet))
+backsol (n, (l, solset)) = (head $ IS.elems $ sols IS.\\ solset, (l', sols))
   where
     sols = IS.fromList . concat . filter ((== 1) . length) $ l'
     l' = map f l
     f l = if length l == 1 then l else filter (/= n) l
 
+part1 :: [[Int]] -> Int
 part1 inp' = sum (concatMap (filter (\f -> not (any ($ f) ranges))) inp')
 
+part2 :: [[Int]] -> Int
 part2 validTickets = product ((myTicket !!) <$> (fromJust . (`elemIndex` answer) <$> [0 .. 5]))
   where
     (_, (answer', _)) = iterate backsol (init, (constraints, IS.singleton init)) !! 19
     answer = concat answer'
-    constraints = foldl1 intersect <$> transpose (map aaaa <$> validTickets)
+    constraints = foldl1' intersect <$> transpose (map aaaa <$> validTickets)
     init = head . concat . filter ((== 1) . length) $ constraints
 
 main = do
