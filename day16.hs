@@ -49,8 +49,8 @@ aaaa x = [n | (n, f) <- rangesA, f x]
 parseLine :: P.ReadP [Int]
 parseLine = P.sepBy (P.readS_to_P reads) (P.string ",") <* P.string "\n"
 
-backsol :: (Int, ([[Int]], IntSet)) -> (Int, ([[Int]], IntSet))
-backsol (n, (l, solset)) = (head $ IS.elems $ sols IS.\\ solset, (l', sols))
+backsol :: (Int, ([[Int]], IntSet)) -> Maybe (Int, ([[Int]], IntSet))
+backsol (n, (l, solset)) = (,) . fst <$> IS.minView (sols IS.\\ solset) <*> pure (l', sols)
   where
     sols = IS.fromList . concat . filter ((== 1) . length) $ l'
     l' = map f l
@@ -59,13 +59,14 @@ backsol (n, (l, solset)) = (head $ IS.elems $ sols IS.\\ solset, (l', sols))
 part1 :: [[Int]] -> Int
 part1 inp' = sum (concatMap (filter (\f -> not (any ($ f) ranges))) inp')
 
-part2 :: [[Int]] -> Int
-part2 validTickets = product ((myTicket !!) <$> (fromJust . (`elemIndex` answer) <$> [0 .. 5]))
+part2 :: [[Int]] -> Maybe Int
+part2 validTickets = foo
   where
-    (_, (answer', _)) = iterate backsol (init, (constraints, IS.singleton init)) !! 19
-    answer = concat answer'
     constraints = foldl1' intersect <$> transpose (map aaaa <$> validTickets)
     init = head . concat . filter ((== 1) . length) $ constraints
+    foo = do (_, (answer', _)) <- iterate (>>= backsol) (pure (init, (constraints, IS.singleton init))) !! 19
+             let answer = concat answer'
+             pure (product ((myTicket !!) <$> (fromJust . (`elemIndex` answer) <$> [0 .. 5])))
 
 main = do
   let dayNumber = 16
