@@ -1,20 +1,13 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# OPTIONS_GHC -Wno-partial-type-signatures -fdefer-typed-holes -fno-warn-unused-imports #-}
 
 import qualified Data.IntSet as IS
 import Data.List
 import Data.Maybe
 import qualified Text.ParserCombinators.ReadP as P
+import Criterion.Main
 
--- Start working down here
-part1, part2 :: _ -> Int
-part1 i = undefined
-part2 i = undefined
-
--- parseInput =
 data Range = Range Int Int deriving (Show)
 
 cR :: Range -> Range -> (Int -> Bool)
@@ -62,27 +55,29 @@ backsol (n, (l, solset)) = (head $ IS.toList $ sols IS.\\ solset, (l', sols))
     l' = map f l
     f l = if length l == 1 then l else filter (/= n) l
 
+part1 inp' = sum (concatMap (filter (\f -> not (any ($ f) ranges))) inp')
+
+part2 validTickets = product ((myTicket !!) <$> (fromJust . (`elemIndex` answer) <$> [0 .. 5]))
+  where
+    (_, (answer', _)) = iterate backsol (init, (constraints, IS.singleton init)) !! 19
+    answer = concat answer'
+    constraints = foldl1 intersect <$> transpose (map aaaa <$> validTickets)
+    init = head . concat . filter ((== 1) . length) $ constraints
+
 main = do
   let dayNumber = 16
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
   inp <- readFile dayFilename
-  let (fo, "") = last (P.readP_to_S (P.many parseLine) inp)
+  let (inp', "") = last (P.readP_to_S (P.many parseLine) inp)
   let isValidTicket l = and [any ($ f) ranges | f <- l]
-  let inp' = filter isValidTicket fo
-  let constraints = foldl1 intersect <$> transpose (map aaaa <$> inp')
-  let init = head . concat . filter ((== 1) . length) $ constraints
-  let (_, (answer', _)) = iterate backsol (init, (constraints, IS.singleton init)) !! 19
-  let answer = concat answer'
-  print (sum (fo >>= (\l -> [f | f <- l, not (any ($ f) ranges)])))
-  print (product ((myTicket !!) <$> (fromJust . (`elemIndex` answer) <$> [0 .. 5])))
-
--- print (part1 inp)
--- print (part2 inp)
--- defaultMain
---   [ bgroup
---       dayString
---       [ bench "part1" $ whnf part1 inp,
---         bench "part2" $ whnf part2 inp
---       ]
---   ]
+  let validTickets = filter isValidTicket inp'
+  print (part1 inp')
+  print (part2 validTickets)
+  defaultMain
+    [ bgroup
+        dayString
+        [ bench "part1" $ whnf part1 inp',
+          bench "part2" $ whnf part2 validTickets
+        ]
+    ]
