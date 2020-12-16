@@ -14,7 +14,7 @@ data L = Mask String | Ass Int Int deriving (Show)
 parseLine = (mem <|> mask) <* P.char '\n'
   where
     mask = P.string "mask = " *> (Mask <$> P.many (P.char 'X' <|> P.char '1' <|> P.char '0'))
-    mem = Ass <$> (P.string "mem[" *> P.readS_to_P reads) <*>  (P.string "] = " *> P.readS_to_P reads)
+    mem = Ass <$> (P.string "mem[" *> P.readS_to_P reads) <*> (P.string "] = " *> P.readS_to_P reads)
 
 type S = (String, IntMap Int)
 
@@ -36,12 +36,12 @@ ref2 :: String -> Int -> [Int]
 ref2 l = foldl' g pure l'
   where
     l' = zip [0 ..] (reverse l)
-    g f (n, 'X') = \x -> f =<< [setBit x n, clearBit x n]
+    g f (n, 'X') = \x -> f (setBit x n) ++ f (clearBit x n)
     g f (n, '0') = f
     g f (n, '1') = \x -> f (setBit x n)
 
 foldInsert :: IntMap a -> [(Int, a)] -> IntMap a
-foldInsert = foldl' (\m (l,r) -> IM.insert l r m)
+foldInsert = foldl' (\m (l, r) -> IM.insert l r m)
 
 ev2 :: S -> L -> S
 ev2 (m, arr) (Mask s) = (s, arr)
