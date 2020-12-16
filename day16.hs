@@ -66,7 +66,8 @@ part2 validTickets = foo
     init = head . concat . filter ((== 1) . length) $ constraints
     foo = do (_, (answer', _)) <- iterate (>>= backsol) (pure (init, (constraints, IS.singleton init))) !! 19
              let answer = concat answer'
-             pure (product ((myTicket !!) <$> (fromJust . (`elemIndex` answer) <$> [0 .. 5])))
+             l <- sequenceA $ (`elemIndex` answer) <$> [0 .. 5]
+             pure (product ((myTicket !!) <$> l))
 
 main = do
   let dayNumber = 16
