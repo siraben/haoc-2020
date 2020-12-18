@@ -10,10 +10,9 @@ parens p = string "(" *> p <* string ")"
 tok :: Parser a -> Parser a
 tok p = p <* spaces
 symb = tok . string
-expr = term `chainl1` addop
+expr = term `chainl1` ((symb "+" $> (+)) <|> (symb "*" $> (*)))
 term = tok (num <|> parens expr)
 num = read <$> many1 digit
-addop = (symb "+" $> (+)) <|> (symb "*" $> (*))
 peval = parse expr ""
 
 -- mul lower precedence than add
