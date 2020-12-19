@@ -151,7 +151,7 @@ parseRule = do
       symb "|"
       r <- many1 num
       pure (Alt l r)
-    compound = Seq <$> (many1 num)
+    compound = Seq <$> many1 num
 
 pp = parse parseRule ""
 
@@ -164,21 +164,24 @@ foo (i, b) e = case b of
   Lit s -> (i, string s $> ())
   Alt l r ->
     ( i,
-      foldl1' (*>) [p | u <- [(i, e IM.! i) | i <- l], let (_, p) = foo u e]
+      -- translate to parser combinators
+      try (foldl1' (*>) [p | u <- [(i, e IM.! i) | i <- l], let (_, p) = foo u e])
         <|> foldl1' (*>) [p | u <- [(i, e IM.! i) | i <- r], let (_, p) = foo u e]
     )
   Seq l -> (i, foldl1' (*>) [p | u <- [(i, e IM.! i) | i <- l], let (_, p) = foo u e])
-  
+
 
 main = do
   let dayNumber = 19
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
   inp <- lines <$> readFile dayFilename
-  let (ps, inps) = span (any (== ':')) inp
+  let (ps, inps') = span (elem ':') inp
+  let inps = tail inps'
   let Right inp' = traverse pp ps
+  print inp'
   let inp'' = IM.fromList inp' :: Env
-  print (countTrue isRight (parse (snd (foo (0, (inp'' IM.! 0)) inp'')) "" <$> inps))
+  print (countTrue isRight ((parse ((snd (foo (0, inp'' IM.! 0) inp'')) <* eof) "") <$> inps))
 
 -- print (part1 inp)
 -- print (part2 inp)
