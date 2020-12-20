@@ -5,9 +5,9 @@
 
 import Criterion.Main
 import Data.Foldable
-import qualified Data.Text as T
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM
+import qualified Data.Text as T
 
 -- Slow splitOn for prototyping
 splitOn :: String -> String -> [String]
@@ -40,9 +40,8 @@ uniqueSide s m = IM.alter (fmap pred) s m IM.! s == 0
 freqs :: [Int] -> IntMap Int
 freqs = IM.fromListWith (+) . map (,1) . toList
 
-part1 inp' = product [x | (x, y) <- inp'', 4 == countTrue id y]
+part1 inp' = product [x | (x, s) <- inp', countTrue (`uniqueSide` allSides) s == 4]
   where
-    inp'' = [(id, (`uniqueSide` allSides) <$> s) | (id, s) <- inp']
     allSides = freqs (snd =<< inp')
 
 main = do
