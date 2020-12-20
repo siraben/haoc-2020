@@ -1,10 +1,14 @@
-import Data.Either
+{-# LANGUAGE LambdaCase #-}
+
+import Criterion.Main
 import Data.Foldable
 import Data.Functor
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM
 import Data.List
+import Data.Maybe
 import Text.ParserCombinators.Parsec
+import qualified Text.ParserCombinators.ReadP as P
 
 -- | Count the number of items in a container where the predicate is true.
 countTrue :: Foldable f => (a -> Bool) -> f a -> Int
@@ -59,28 +63,45 @@ foo (i, b) e = case b of
     )
   Seq l -> (i, foldl1' (*>) [p | u <- [(i, e IM.! i) | i <- l], let (_, p) = foo u e])
 
+parseMessage :: Env -> Int -> String -> Maybe [String]
+parseMessage rules ruleIx input = toMaybe $ P.readP_to_S parser input
+  where
+    parser = parserFor ruleIx <* P.eof
+    toMaybe = \case
+      [(s, "")] -> Just s
+      _ -> Nothing
+    -- parserFor :: Int -> P.ReadP String
+    parserFor ix = go (rules IM.! ix)
+      where
+        go = \case
+          Lit s -> return <$> P.string s
+          Alt l r -> asum (ruleList <$> [l, r])
+          Seq l -> ruleList l
+        ruleList rs = concat <$> traverse parserFor rs
+
+part1 (ruleMap, strs) = countTrue isJust (parseMessage ruleMap 0 <$> strs)
+
+change =
+  IM.insert 8 (Alt [42] [42, 8])
+    . IM.insert 11 (Alt [42, 31] [42, 11, 31])
+
+part2 = part1
+
 main = do
   let dayNumber = 19
-  let dayString = "day" <> show dayNumber
-  let dayFilename = dayString <> ".txt"
+      dayString = "day" <> show dayNumber
+      dayFilename = dayString <> ".txt"
   inp <- lines <$> readFile dayFilename
-  let (ps, inps') = span (elem ':') inp
-  let inps = tail inps'
-  let Right inp' = traverse pp ps
-  print inp'
-  let inp'' = IM.fromList inp' :: Env
-  -- print (countTrue isRight ((parse ((snd (foo (0, inp'' IM.! 0) inp'')) <* eof) "") <$> inps))
-  let rule0 = snd (foo (0, inp'' IM.! 0) inp'') <* eof
-  -- print (parse rule0 "" "bbbbbbbaaaabbbbaaabbabaaa")
-  -- mapM_ print (filter (isRight . parse rule0 "") inps)
-  print (countTrue isRight (parse rule0 "" <$> inps))
-
--- print (part1 inp)
--- print (part2 inp)
--- defaultMain
---   [ bgroup
---       dayString
---       [ bench "part1" $ whnf part1 inp,
---         bench "part2" $ whnf part2 inp
---       ]
---   ]
+  let (ps, strs) = span (elem ':') inp
+      Right rules = traverse pp ps
+      ruleMap = IM.fromList rules :: Env
+  let ruleMap' = change ruleMap
+  print (part1 (ruleMap, strs))
+  print (part2 (ruleMap', strs))
+  defaultMain
+    [ bgroup
+        dayString
+        [ bench "part1" $ whnf part1 (ruleMap, strs),
+          bench "part2" $ whnf part2 (ruleMap', strs)
+        ]
+    ]
