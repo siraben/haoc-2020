@@ -34,7 +34,7 @@ mkBlock (h : d) = (header h, toBinNum <$> ([id, reverse] <*> [top, bot, left, ri
 
 -- is s unique wrt. all sides l
 uniqueSide :: Int -> IntMap Int -> Bool
-uniqueSide s m = IM.alter (fmap pred) s m IM.! s == 0
+uniqueSide s m = m IM.! s == 1
 
 -- | Build a frequency map
 freqs :: [Int] -> IntMap Int
