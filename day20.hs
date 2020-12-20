@@ -3,11 +3,10 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 
+import Criterion.Main
 import Data.Foldable
 import Data.List
 import qualified Data.Text as T
-
--- import Criterion.Main
 
 -- Slow splitOn for prototyping
 splitOn :: String -> String -> [String]
@@ -47,9 +46,9 @@ main = do
   inp <- (lines <$>) . splitOn "\n\n" <$> readFile dayFilename
   let inp' = mkBlock <$> inp
   print (part1 inp')
-  -- defaultMain
-  --   [ bgroup
-  --       dayString
-  --       [ bench "part1" $ whnf part1 inp
-  --       ]
-  --   ]
+  defaultMain
+    [ bgroup
+        dayString
+        [ bench "part1" $ whnf part1 inp'
+        ]
+    ]

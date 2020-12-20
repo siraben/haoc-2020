@@ -439,4 +439,15 @@ time                 70.92 ms   (70.21 ms .. 71.47 ms)
 mean                 70.95 ms   (70.49 ms .. 71.45 ms)
 std dev              873.7 μs   (599.9 μs .. 1.360 ms)
 ```
+
+### Day 20
+<details>
+
+```
+benchmarking day20/part1
+time                 14.83 ms   (14.67 ms .. 15.00 ms)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 14.84 ms   (14.76 ms .. 15.04 ms)
+std dev              302.7 μs   (147.6 μs .. 570.8 μs)
+```
 </details>
