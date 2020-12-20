@@ -40,9 +40,10 @@ uniqueSide s m = IM.alter (fmap pred) s m IM.! s == 0
 freqs :: [Int] -> IntMap Int
 freqs = IM.fromListWith (+) . map (,1) . toList
 
+part1 :: [(Int, [Int])] -> Int
 part1 inp' = product [x | (x, s) <- inp', countTrue (`uniqueSide` allSides) s == 4]
   where
-    allSides = freqs (snd =<< inp')
+    allSides = freqs (concatMap snd inp')
 
 main = do
   let dayNumber = 20
