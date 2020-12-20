@@ -5,8 +5,9 @@
 
 import Criterion.Main
 import Data.Foldable
-import Data.List
 import qualified Data.Text as T
+import Data.IntMap (IntMap)
+import qualified Data.IntMap as IM
 
 -- Slow splitOn for prototyping
 splitOn :: String -> String -> [String]
@@ -32,12 +33,17 @@ mkBlock (h : d) = (header h, toBinNum <$> ([id, reverse] <*> [top, bot, left, ri
     right = last <$> d
 
 -- is s unique wrt. all sides l
-uniqueSide s l = s `notElem` (l \\ [s])
+uniqueSide :: Int -> IntMap Int -> Bool
+uniqueSide s m = IM.alter (fmap pred) s m IM.! s == 0
+
+-- | Build a frequency map
+freqs :: [Int] -> IntMap Int
+freqs = IM.fromListWith (+) . map (,1) . toList
 
 part1 inp' = product [x | (x, y) <- inp'', 4 == countTrue id y]
   where
     inp'' = [(id, (`uniqueSide` allSides) <$> s) | (id, s) <- inp']
-    allSides = snd =<< inp'
+    allSides = freqs (snd =<< inp')
 
 main = do
   let dayNumber = 20

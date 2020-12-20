@@ -445,9 +445,10 @@ std dev              873.7 μs   (599.9 μs .. 1.360 ms)
 
 ```
 benchmarking day20/part1
-time                 14.83 ms   (14.67 ms .. 15.00 ms)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 14.84 ms   (14.76 ms .. 15.04 ms)
-std dev              302.7 μs   (147.6 μs .. 570.8 μs)
+time                 459.7 μs   (457.6 μs .. 461.6 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 461.0 μs   (458.6 μs .. 464.6 μs)
+std dev              10.20 μs   (6.815 μs .. 16.24 μs)
+variance introduced by outliers: 13% (moderately inflated)
 ```
 </details>
