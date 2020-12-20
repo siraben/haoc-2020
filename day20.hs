@@ -1,7 +1,4 @@
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE TupleSections #-}
-{-# LANGUAGE TypeApplications #-}
 
 import Criterion.Main
 import Data.Foldable
@@ -17,8 +14,6 @@ splitOn sep s = T.unpack <$> T.splitOn (T.pack sep) (T.pack s)
 countTrue :: Foldable f => (a -> Bool) -> f a -> Int
 countTrue p = length . filter p . toList
 
-header s = read (init (drop 5 s)) :: Int
-
 toBinNum = foldl' f 0
   where
     f n '#' = n * 2 + 1
@@ -26,7 +21,7 @@ toBinNum = foldl' f 0
 
 mkBlock (h : d) = (header h, toBinNum <$> ([id, reverse] <*> [top, bot, left, right]))
   where
-    -- consider just the edges
+    header s = read (init (drop 5 s)) :: Int
     top = head d
     bot = last d
     left = head <$> d
