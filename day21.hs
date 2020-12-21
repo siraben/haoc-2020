@@ -46,12 +46,11 @@ part1 inp' = sum [allIngredsM M.! i | i <- goodIngreds]
 findFirst :: Foldable f => (a -> Bool) -> f a -> a
 findFirst f = fromJust . find f
 
-delSnd x l = [(a, S.delete x s) | (a, s) <- l]
-
 step :: ((String, [(String, Set String)], [(String, String)]) -> (String, [(String, Set String)], [(String, String)]))
 step (_, constraints', sols) = (s, delSnd s constraints', (init, s) : sols)
   where
     (init, S.elems -> [s]) = findFirst ((== 1) . S.size . snd) constraints'
+    delSnd x l = [(a, S.delete x s) | (a, s) <- l]
 
 iter :: Int -> ((String, [(String, Set String)], [(String, String)]) -> (String, [(String, Set String)], [(String, String)]))
 iter (0 :: Int) x = x
