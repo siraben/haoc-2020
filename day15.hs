@@ -26,13 +26,15 @@ part1 inp = prev (iter (2020 - length inp) (initState inp))
 part2 inp = prev (iter (30000000 - length inp) (initState inp))
 
 main = do
+  let dayNumber = 15 :: Int
+  let dayString = "day" <> show dayNumber
+  let dayFilename = dayString <> ".txt"
   let inp = [0, 13, 1, 16, 6, 17]
   print (part1 inp)
   print (part2 inp)
--- defaultMain
---   [ bgroup
---       dayString
---       [ bench "part1" $ whnf part1 inp,
---         bench "part2" $ whnf part2 inp
---       ]
---   ]
+  defaultMain
+    [ bgroup
+        dayString
+        [ bench "part1" $ whnf part1 inp
+        ]
+    ]

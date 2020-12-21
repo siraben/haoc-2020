@@ -376,11 +376,7 @@ mean                 318.6 μs   (315.7 μs .. 323.1 μs)
 std dev              11.70 μs   (8.501 μs .. 16.76 μs)
 variance introduced by outliers: 32% (moderately inflated)
 
-benchmarking day14/part2
-time                 46.26 ms   (45.08 ms .. 48.46 ms)
-                     0.996 R²   (0.991 R² .. 1.000 R²)
-mean                 45.57 ms   (45.13 ms .. 46.43 ms)
-std dev              1.216 ms   (655.2 μs .. 2.038 ms)
+./day15 part2  47.38s user 0.35s system 99% cpu 47.735 total
 ```
 </details>
 
