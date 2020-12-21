@@ -42,11 +42,11 @@ Of course with (3) one could continue shaving off more and more time,
 though these heuristics in practice have given me most of the gains.
 
 ## Writing Haskell for AoC quickly
-Over a week in, it's becoming clearer how to do better at AoC, the
-principle is
+AoC is all about solving the problem quickly via any means, so
 
 > a naive (but possibly inefficient) solution that is quick to write
-> better than an optimized one that is slow to write
+> and produces the answer is better than an optimized one that is slow
+> to write
 
 From this principle, it informs my choices on how to write Haskell
 quickly for the initial solve.
