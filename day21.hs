@@ -146,6 +146,20 @@ addC m (a,b) = M.adjust (S.insert b) a m'
 
 dd a i = [(x,) <$> i | x <- a]
 
+-- backsol :: (Int, ([[Int]], IntSet)) -> Maybe (Int, ([[Int]], IntSet))
+-- (,) . fst <$> S.minView (sols S.\\ solset) <*> pure (l', sols)
+-- backsol (n, (l, solset)) = (l', sols)
+--   where
+--     sols = S.fromList . concat . filter ((== 1) . length) $ l'
+--     l' = map f l
+--     f l = if length l == 1 then l else filter (/= n) l
+
+-- backsol :: (String, [(String, Set String)]) -> (String, ([(String, Set String)], Set ))
+
+report = concat . intersperse ","
+sol :: [(String, String)]
+sol = [("shellfish", "clg"), ("peanuts", "lxjtns"), ("sesame", "vzzz"), ("soy", "cxfz"), ("eggs", "prxmdlz"), ("wheat", "qdfpq"), ("nuts", "knprxg"), ("fish", "ncjv")]
+
 main = do
   let dayNumber = 21
   let dayString = "day" <> show dayNumber
@@ -156,9 +170,14 @@ main = do
   let allIngreds' = freqs (concatMap snd inp')
   let allIngreds = S.fromList (concatMap snd inp')
   let bb = uncurry cp <$> inp'
-  let constraints = M.unionsWith S.intersection (uncurry M.singleton <$> (map aa . uncurry dd =<< inp'))
+  let constraints = M.unionsWith S.intersection (uncurry M.singleton <$> (map aa . uncurry dd =<< inp')) :: Map String (Set String)
   let badIngreds = S.unions (M.elems constraints)
-  print (sum [allIngreds' M.! i |i <-  S.elems (allIngreds S.\\ badIngreds)])
+  let cList = M.toList constraints
+  let dd = cList :: [(String, Set String)]
+  let e = [(x, S.elems s) | (x,s) <- dd]
+  mapM_ print cList
+  let goodIngreds = S.elems (allIngreds S.\\ badIngreds)
+  print (sum [allIngreds' M.! i |i <-  goodIngreds])
   -- print (part1 inp)
   -- print (part2 inp)
   -- defaultMain
