@@ -468,3 +468,18 @@ std dev              132.4 μs   (91.84 μs .. 198.3 μs)
 variance introduced by outliers: 42% (moderately inflated)
 ```
 </details>
+
+### Day 22
+<details>
+
+```
+benchmarking day22/part1
+time                 162.8 μs   (160.6 μs .. 166.0 μs)
+                     0.997 R²   (0.993 R² .. 1.000 R²)
+mean                 161.0 μs   (159.8 μs .. 163.8 μs)
+std dev              5.787 μs   (2.801 μs .. 11.48 μs)
+variance introduced by outliers: 34% (moderately inflated)
+
+part2  9.64s user 0.00s system 99% cpu 9.651 total
+```
+</details>

@@ -17,6 +17,15 @@ fixedPoint f = go
       where
         y = f $! x
 
+-- fixedPointBy :: Eq a => (a -> a) -> a -> a
+fixedPointBy cmp f = go
+  where
+    go !x
+      | x `cmp` y = x
+      | otherwise = go $! y
+      where
+        y = f $! x
+
 -- Start working down here
 type GS = ([Int], [Int])
 
@@ -78,7 +87,9 @@ step2 (g@(a : as, b : bs), h, s)
           O -> ((as ++ l, bs), g : h, P)
   | otherwise = (step g, g : h, s) -- (2), (4)
 
-part2 (a, b) = calcWin (let (x, _, _) = fixedPoint step2 ((a, b), [], P) in x)
+part2 (a, b) = calcWin (let (x, _, _) = fixedPointBy f step2 ((a, b), [], P) in x)
+  where
+    f (_,_,s1) (_,_,s2) = s1 /= s2
 
 main = do
   let dayNumber = 22
@@ -88,12 +99,12 @@ main = do
   let [a, b] = map (map read) inp :: [[Int]]
   let inp' = (a,b)
   print (part1 inp')
-  print (part2 inp')
+  -- print (part2 inp')
   defaultMain
     [ bgroup
         dayString
-        [ bench "part1" $ whnf part1 inp',
-          bench "part2" $ whnf part2 inp'
+        [ bench "part1" $ whnf part1 inp'
+--          bench "part2" $ whnf part2 inp'
         ]
     ]
   
