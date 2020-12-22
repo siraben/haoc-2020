@@ -9,15 +9,10 @@ splitOn sep s = T.unpack <$> T.splitOn (T.pack sep) (T.pack s)
 
 -- | Repeat a function until you get the same result twice.
 fixedPoint :: Eq a => (a -> a) -> a -> a
-fixedPoint f = go
-  where
-    go !x
-      | x == y = x
-      | otherwise = go $! y
-      where
-        y = f $! x
+fixedPoint = fixedPointBy (==)
 
--- fixedPointBy :: Eq a => (a -> a) -> a -> a
+-- | Repeat a function until some condition is met.
+fixedPointBy :: (a -> a -> Bool) -> (a -> a) -> a -> a
 fixedPointBy cmp f = go
   where
     go !x
@@ -99,7 +94,7 @@ main = do
   let [a, b] = map (map read) inp :: [[Int]]
   let inp' = (a,b)
   print (part1 inp')
-  -- print (part2 inp')
+  print (part2 inp')
   defaultMain
     [ bgroup
         dayString
