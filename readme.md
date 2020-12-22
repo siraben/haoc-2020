@@ -474,12 +474,16 @@ variance introduced by outliers: 42% (moderately inflated)
 
 ```
 benchmarking day22/part1
-time                 162.8 μs   (160.6 μs .. 166.0 μs)
-                     0.997 R²   (0.993 R² .. 1.000 R²)
-mean                 161.0 μs   (159.8 μs .. 163.8 μs)
-std dev              5.787 μs   (2.801 μs .. 11.48 μs)
-variance introduced by outliers: 34% (moderately inflated)
+time                 94.72 μs   (94.27 μs .. 95.16 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 94.99 μs   (94.77 μs .. 95.22 μs)
+std dev              764.4 ns   (638.6 ns .. 910.5 ns)
 
-part2  9.64s user 0.00s system 99% cpu 9.651 total
+benchmarking day22/part2
+time                 5.975 s    (5.901 s .. 6.091 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 5.923 s    (5.908 s .. 5.950 s)
+std dev              25.80 ms   (2.169 ms .. 32.33 ms)
+variance introduced by outliers: 19% (moderately inflated)
 ```
 </details>

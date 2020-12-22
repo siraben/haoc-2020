@@ -1,45 +1,33 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE OverloadedLists #-}
 
-import qualified Data.Text as T
 import Criterion.Main
+import Data.Foldable
+import Data.Sequence (Seq (..))
+import qualified Data.Sequence as Q
+import Data.Set (Set)
+import qualified Data.Set as S
+import qualified Data.Text as T
+import qualified Data.Vector.Generic as V
+import qualified Data.Vector.Unboxed as UVector
 
--- Slow splitOn for prototyping
+type UVector = UVector.Vector
+
 splitOn :: String -> String -> [String]
 splitOn sep s = T.unpack <$> T.splitOn (T.pack sep) (T.pack s)
 
--- | Repeat a function until you get the same result twice.
-fixedPoint :: Eq a => (a -> a) -> a -> a
-fixedPoint = fixedPointBy (==)
-
--- | Repeat a function until some condition is met.
-fixedPointBy :: (a -> a -> Bool) -> (a -> a) -> a -> a
-fixedPointBy cmp f = go
-  where
-    go !x
-      | x `cmp` y = x
-      | otherwise = go $! y
-      where
-        y = f $! x
-
 -- Start working down here
-type GS = ([Int], [Int])
-
-step :: GS -> GS
-step (a : as, b : bs)
-  | a > b = (as ++ l, bs)
-  | a < b = (as, bs ++ l)
+step1 (Empty, b) = b
+step1 (a, Empty) = a
+step1 (a :<| as, b :<| bs)
+  | a > b = step1 (as <> l, bs)
+  | a < b = step1 (as, bs <> l)
   where
-    l = [max a b, min a b]
-step x = x
+    l = Q.fromList [max a b, min a b]
 
-calcScore l = sum (zipWith (*) [1 ..] (reverse l))
+calcScore = sum . zipWith (*) [1 ..] . reverse . toList
 
-calcWin ([], l) = calcScore l
-calcWin (l, []) = calcScore l
-
-part1 (a, b) = calcWin (fixedPoint step (a, b))
-
-type GH = [GS]
+part1 = calcScore . step1
 
 {-
 
@@ -67,24 +55,34 @@ type GH = [GS]
 --     in prog, one, two
 data S = P | O | T deriving (Show, Eq)
 
-step2 :: (GS, GH, S) -> (GS, GH, S)
-step2 (g@([], b), h, _) = (g, h, T)
-step2 (g@(a, []), h, _) = (g, h, O)
-step2 (g@(a : as, b : bs), h, s)
-  | g `elem` h = (g, h, O) -- (1)
-  | a <= length as && b <= length bs =
-    let l = case s of
-          O -> [a, b]
-          T -> [b, a]
-        (_, _, s) = fixedPoint step2 ((take a as, take b bs), [], P)
-     in case s of -- (3)
-          T -> ((as, bs ++ l), g : h, P)
-          O -> ((as ++ l, bs), g : h, P)
-  | otherwise = (step g, g : h, s) -- (2), (4)
-
-part2 (a, b) = calcWin (let (x, _, _) = fixedPointBy f step2 ((a, b), [], P) in x)
+step2 :: Set (UVector Int) -> Deck -> Deck -> (Int, Deck)
+step2 _ Empty xs = (1, xs)
+step2 _ xs Empty = (0, xs)
+step2 seen xxs@(x :<| xs) yys@(y :<| ys)
+  | here `elem` seen = (0, xs)
+  | x <= Q.length xs && y <= Q.length ys =
+    let (w, _) = step2 S.empty (Q.take x xs) (Q.take y ys)
+        l = Q.fromList $ case w of
+          0 -> [x, y]
+          1 -> [y, x]
+     in case step2 S.empty (Q.take x xs) (Q.take y ys) of
+          (0, _) -> step2 seen1 (xs <> l) ys
+          (1, _) -> step2 seen1 xs (ys <> l)
+  | x > y = step2 seen1 (give xs x y) ys
+  | otherwise = step2 seen1 xs (give ys y x)
   where
-    f (_,_,s1) (_,_,s2) = s1 /= s2
+    here = characterize xxs yys
+    seen1 = S.insert here seen
+
+type Deck = Seq Int
+
+characterize :: Deck -> Deck -> UVector Int
+characterize xs ys = V.fromList (toList xs ++ [-1] ++ toList ys)
+
+give :: Deck -> Int -> Int -> Deck
+give a b c = a Q.|> b Q.|> c
+
+part2 = calcScore . snd . uncurry (step2 S.empty)
 
 main = do
   let dayNumber = 22
@@ -92,14 +90,13 @@ main = do
   let dayFilename = dayString <> ".txt"
   inp <- (tail . lines <$>) . splitOn "\n\n" <$> readFile dayFilename
   let [a, b] = map (map read) inp :: [[Int]]
-  let inp' = (a,b)
+  let inp' = (Q.fromList a, Q.fromList b)
   print (part1 inp')
   print (part2 inp')
   defaultMain
     [ bgroup
         dayString
-        [ bench "part1" $ whnf part1 inp'
---          bench "part2" $ whnf part2 inp'
+        [ bench "part1" $ whnf part1 inp',
+          bench "part2" $ whnf part2 inp'
         ]
     ]
-  
