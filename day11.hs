@@ -8,11 +8,12 @@
 {-# OPTIONS_GHC -Wno-partial-type-signatures -fdefer-typed-holes -fno-warn-unused-imports #-}
 
 import Criterion.Main
+import Data.Bifunctor
 import qualified Data.ByteString.Char8 as B
 import Data.Foldable
-import Data.List
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM
+import Data.List
 import Data.Maybe
 
 -- | Count the number of items in a container where the predicate is true.
@@ -48,8 +49,8 @@ nextState2 r c g
   | x == '#' && countTrue (== '#') ns >= 5 = 'L'
   | otherwise = x
   where
-    x = (fromJust$ cellRef r c g)
-    ray xo yo r c = catMaybes [cellRef x y g | (x, y) <- tail $ iterate (\(r,c) -> (xo + r, yo + c)) (r, c)]
+    x = fromJust $ cellRef r c g
+    ray xo yo r c = catMaybes [cellRef x y g | (x, y) <- tail $ iterate (bimap (xo +) (yo +)) (r, c)]
     cellRef r c g = g IM.!? r >>= (IM.!? c)
     neighbors r c = concatMap (takeWhile1 (\x -> not (x == 'W' || x == 'L' || x == '#'))) [n, ne, e, se, s, sw, w, nw]
       where
@@ -66,8 +67,8 @@ nextState2 r c g
 
 part1 = countTrue (== '#') . concat . (IM.elems <$>) . IM.elems . fixedPoint part1f
 
-part1f ::  IntMap (IntMap Char)  ->  IntMap (IntMap Char)
-part1f g = IM.mapWithKey (\r m -> IM.mapWithKey (\c s -> nextState s r c g ) m) g
+part1f :: IntMap (IntMap Char) -> IntMap (IntMap Char)
+part1f g = IM.mapWithKey (\r m -> IM.mapWithKey (\c s -> nextState s r c g) m) g
 
 part2 = countTrue (== '#') . unlines . fixedPoint part2f
 
