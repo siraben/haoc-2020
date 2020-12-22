@@ -101,13 +101,17 @@ segs = concatMap tails . inits
 
 -- | Repeat a function until you get the same result twice.
 fixedPoint :: Eq a => (a -> a) -> a -> a
-fixedPoint f = go
+fixedPoint = fixedPointBy (==)
+
+-- | Repeat a function until some condition is met.
+fixedPointBy :: (a -> a -> Bool) -> (a -> a) -> a -> a
+fixedPointBy cmp f = go
   where
     go !x
-      | x == y = x
-      | otherwise = go y
+      | x `cmp` y = x
+      | otherwise = go $! y
       where
-        y = f x
+        y = f $! x
 
 -- Start working down here
 part1, part2 :: _ -> Int
