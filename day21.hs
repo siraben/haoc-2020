@@ -49,7 +49,7 @@ findFirst f = fromJust . find f
 step :: ((String, [(String, Set String)], [(String, String)]) -> (String, [(String, Set String)], [(String, String)]))
 step (_, constraints', sols) = (s, delSnd s constraints', (init, s) : sols)
   where
-    (init, S.elems -> [s]) = findFirst ((== 1) . S.size . snd) constraints'
+    (init, S.findMin -> s) = findFirst ((== 1) . S.size . snd) constraints'
     delSnd x l = [(a, S.delete x s) | (a, s) <- l]
 
 iter :: Int -> ((String, [(String, Set String)], [(String, String)]) -> (String, [(String, Set String)], [(String, String)]))
@@ -60,7 +60,7 @@ part2 inp' = report (snd <$> sortOn fst sol)
   where
     (_, _, sol) = iter 8 (s, constraints, [] :: [(String, String)])
     report = intercalate ","
-    (_, S.elems -> [s]) = findFirst ((== 1) . S.size . snd) constraints
+    (_, S.findMin -> s) = findFirst ((== 1) . S.size . snd) constraints
     constraints = M.toList (M.unionsWith S.intersection (uncurry M.singleton <$> (map aa . uncurry ldist =<< inp')))
     aa ls = (fst (head ls), S.fromList (snd <$> ls))
     ldist a i = [(x,) <$> i | x <- a]
