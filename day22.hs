@@ -76,7 +76,7 @@ step2 (g@(a : as, b : bs), h, s)
      in case s of -- (3)
           T -> ((as, bs ++ l), g : h, P)
           O -> ((as ++ l, bs), g : h, P)
-  | otherwise = (step g, g : h, s)
+  | otherwise = (step g, g : h, s) -- (2), (4)
 
 part2 (a, b) = calcWin (let (x, _, _) = fixedPoint step2 ((a, b), [], P) in x)
 
