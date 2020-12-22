@@ -417,6 +417,7 @@ time                 5.780 ms   (5.728 ms .. 5.841 ms)
 mean                 5.756 ms   (5.722 ms .. 5.805 ms)
 std dev              126.0 μs   (89.81 μs .. 179.4 μs)
 ```
+</details>
 
 ### Day 19
 <details>
@@ -435,6 +436,8 @@ time                 70.92 ms   (70.21 ms .. 71.47 ms)
 mean                 70.95 ms   (70.49 ms .. 71.45 ms)
 std dev              873.7 μs   (599.9 μs .. 1.360 ms)
 ```
+
+</details>
 
 ### Day 20
 <details>
@@ -480,10 +483,10 @@ mean                 94.99 μs   (94.77 μs .. 95.22 μs)
 std dev              764.4 ns   (638.6 ns .. 910.5 ns)
 
 benchmarking day22/part2
-time                 5.975 s    (5.901 s .. 6.091 s)
+time                 5.856 s    (5.807 s .. 5.964 s)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 5.923 s    (5.908 s .. 5.950 s)
-std dev              25.80 ms   (2.169 ms .. 32.33 ms)
+mean                 5.835 s    (5.822 s .. 5.848 s)
+std dev              16.51 ms   (7.150 ms .. 20.76 ms)
 variance introduced by outliers: 19% (moderately inflated)
 ```
 </details>

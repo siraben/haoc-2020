@@ -10,6 +10,7 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Vector.Generic as V
 import qualified Data.Vector.Unboxed as UVector
+import Data.Bifunctor
 
 type UVector = UVector.Vector
 
@@ -55,19 +56,15 @@ part1 = calcScore . step1
 --     in prog, one, two
 data S = P | O | T deriving (Show, Eq)
 
-step2 :: Set (UVector Int) -> Deck -> Deck -> (Int, Deck)
-step2 _ Empty xs = (1, xs)
-step2 _ xs Empty = (0, xs)
+step2 :: Set (UVector Int) -> Deck -> Deck -> Either Deck Deck
+step2 _ Empty xs = Right xs
+step2 _ xs Empty = Left xs
 step2 seen xxs@(x :<| xs) yys@(y :<| ys)
-  | here `elem` seen = (0, xs)
+  | here `elem` seen = Left xs
   | x <= Q.length xs && y <= Q.length ys =
-    let (w, _) = step2 S.empty (Q.take x xs) (Q.take y ys)
-        l = Q.fromList $ case w of
-          0 -> [x, y]
-          1 -> [y, x]
-     in case step2 S.empty (Q.take x xs) (Q.take y ys) of
-          (0, _) -> step2 seen1 (xs <> l) ys
-          (1, _) -> step2 seen1 xs (ys <> l)
+      case step2 S.empty (Q.take x xs) (Q.take y ys) of
+        Left  _ -> step2 seen1 (give xs x y) ys
+        Right _ -> step2 seen1 xs (give ys y x)
   | x > y = step2 seen1 (give xs x y) ys
   | otherwise = step2 seen1 xs (give ys y x)
   where
@@ -82,7 +79,7 @@ characterize xs ys = V.fromList (toList xs ++ [-1] ++ toList ys)
 give :: Deck -> Int -> Int -> Deck
 give a b c = a Q.|> b Q.|> c
 
-part2 = calcScore . snd . uncurry (step2 S.empty)
+part2 = bimap calcScore calcScore .  uncurry (step2 S.empty)
 
 main = do
   let dayNumber = 22
