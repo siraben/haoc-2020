@@ -60,8 +60,8 @@ step2 :: Set (UVector Int) -> Deck -> Deck -> Either Deck Deck
 step2 _ Empty xs = Right xs
 step2 _ xs Empty = Left xs
 step2 seen xxs@(x :<| xs) yys@(y :<| ys)
-  | here `elem` seen = Left xs
-  | x <= Q.length xs && y <= Q.length ys =
+  | here `S.member` seen = Left xs
+  | x <= Q.length xs , y <= Q.length ys =
       case step2 S.empty (Q.take x xs) (Q.take y ys) of
         Left  _ -> step2 seen1 (give xs x y) ys
         Right _ -> step2 seen1 xs (give ys y x)
