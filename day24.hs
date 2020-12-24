@@ -3,9 +3,10 @@
 import Control.Monad
 import Criterion.Main
 import Data.Char
-import Data.Foldable
+import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Text.ParserCombinators.Parsec
@@ -56,7 +57,7 @@ addPoint :: HG -> [Dir] -> HG
 addPoint m p = M.insert coord (1 - col) m
   where
     coord = follow p
-    col = if Just 1 == (m M.!? coord) then 1 else 0
+    col = fromMaybe 0 (m M.!? coord)
 
 part1 :: [[Dir]] -> Int
 part1 = M.size . M.filter (== 1) . createMap
