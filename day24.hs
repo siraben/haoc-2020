@@ -36,34 +36,32 @@ origin = (0, 0, 0)
 
 follow = foldl' (flip move) origin
 
-data Col = WH | BL deriving (Show, Eq)
+fC = not
 
-fC WH = BL
-fC BL = WH
-
-type HG = Map (Int, Int, Int) Col
+type HG = Map (Int, Int, Int) Bool
 
 neighbors p = map (`move` p) moves
 
 step :: HG -> HG
 step m = M.mapWithKey f (M.union m m')
   where
-    m' = M.fromList ((,WH) <$> (neighbors =<< M.keys m))
-    f c w = case w of
-      WH -> if blacks == 2 then BL else WH
-      BL -> if blacks == 0 || blacks > 2 then WH else BL
+    m' = M.fromList ((,False) <$> (neighbors =<< M.keys m))
+    f c w
+      | w = not (blacks == 0 || blacks > 2)
+      | blacks == 2 = True
+      | otherwise = False
       where
         ns = neighbors c
-        ncs = fromMaybe WH . (m M.!?) <$> ns
-        blacks = countTrue (== BL) ncs
+        ncs = fromMaybe False . (m M.!?) <$> ns
+        blacks = countTrue id ncs
 
-countBlacks = M.size . M.filter (== BL)
+countBlacks = M.size . M.filter id
 
 ba :: HG -> [Dir] -> HG
 ba m p = M.insert coord (fC col) m
   where
     coord = follow p
-    col = fromMaybe WH (m M.!? coord)
+    col = Just True == (m M.!? coord)
 
 createMap :: [[Dir]] -> HG
 createMap = foldl' ba M.empty
