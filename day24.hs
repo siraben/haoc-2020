@@ -6,7 +6,6 @@ import Data.Char
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Text.ParserCombinators.Parsec
@@ -21,22 +20,22 @@ dir = read <$> foldl' (\x y -> try y <|> x) mzero (string <$> ["E", "SE", "SW", 
 
 pp = parse (many1 dir) ""
 
-pA (a, b, c) (x, y, z) = (a + x, b + y, c + z)
+pA (a, b) (x, y) = (a + x, b + y)
 
-move E = pA (1, -1, 0)
-move SE = pA (0, -1, 1)
-move SW = pA (-1, 0, 1)
-move W = pA (-1, 1, 0)
-move NW = pA (0, 1, -1)
-move NE = pA (1, 0, -1)
+move E = pA (1, -1)
+move SE = pA (0, -1)
+move SW = pA (-1, 0)
+move W = pA (-1, 1)
+move NW = pA (0, 1)
+move NE = pA (1, 0)
 
 follow = foldl' (flip move) origin
   where
-    origin = (0, 0, 0)
+    origin = (0, 0)
 
 neighbors p = S.fromList (map (`move` p) moves)
 
-type Coord = (Int, Int, Int)
+type Coord = (Int, Int)
 
 type PC = Set Coord
 
@@ -48,25 +47,25 @@ step2 ps = keep <> birth
     keep = M.keysSet (M.filter (\n -> n == 1 || n == 2) (ncs `M.restrictKeys` ps))
     birth = M.keysSet (M.filter (== 2) (ncs `M.withoutKeys` ps))
 
-type HG = Map (Int, Int, Int) Int
+type HG = Map Coord Bool
 
 createMap :: [[Dir]] -> HG
 createMap = foldl' addPoint M.empty
 
 addPoint :: HG -> [Dir] -> HG
-addPoint m p = M.insertWith f coord 1 m
+addPoint m p = M.insertWith f coord True m
   where
     coord = follow p
-    f _ y = 1 - y
+    f _ y = not y
 
 part1 :: [[Dir]] -> Int
-part1 = M.size . M.filter (== 1) . createMap
+part1 = M.size . M.filter id . createMap
 
 part2 :: [[Dir]] -> Int
 part2 = S.size . iter 100 . toSet . createMap
   where
     toSet :: HG -> PC
-    toSet = M.keysSet . M.filter (== 1)
+    toSet = M.keysSet . M.filter id
     iter 0 x = x
     iter n x = iter (pred n) $! step2 x
 
