@@ -9,6 +9,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import Text.ParserCombinators.Parsec
 import qualified Data.Set as S
+import Data.Functor.Compose
 
 -- | Count the number of items in a container where the predicate is true.
 countTrue :: Foldable f => (a -> Bool) -> f a -> Int
@@ -37,27 +38,27 @@ origin = (0, 0, 0)
 
 follow = foldl' (flip move) origin
 
-type HG = Map (Int, Int, Int) Bool
+type HG = Map (Int, Int, Int) Int
 
 neighbors p = map (`move` p) moves
 
 step :: HG -> HG
 step m = M.mapWithKey f (M.union m m')
   where
-    m' = M.fromList [(x, False) | x <- neighbors =<< M.keys m, x `M.notMember` m]
-    f c w = (w && blacks == 1) || blacks == 2
+    m' = M.fromList [(x, 0) | x <- neighbors =<< M.keys m, x `M.notMember` m]
+    f c w = if (w == 1 && blacks == 1) || blacks == 2 then 1 else 0
       where
         ns = neighbors c
-        ncs = (== Just True) . (m M.!?) <$> ns
-        blacks = countTrue id ncs
+        ncs = (m M.!?) <$> ns
+        blacks = sum (Compose ncs)
 
-countBlacks = M.size . M.filter id
+countBlacks = M.size . M.filter (== 1)
 
 ba :: HG -> [Dir] -> HG
-ba m p = M.insert coord (not col) m
+ba m p = M.insert coord (1 - col) m
   where
     coord = follow p
-    col = Just True == (m M.!? coord)
+    col = if Just 1 == (m M.!? coord) then 1 else 0
 
 createMap :: [[Dir]] -> HG
 createMap = foldl' ba M.empty
