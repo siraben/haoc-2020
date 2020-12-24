@@ -115,8 +115,9 @@ fixedPointBy cmp f = go
         y = f $! x
 
 data Dir = E | SE | SW | W | NW | NE
-         deriving (Show, Read)
+         deriving (Show, Read, Enum)
 
+moves = enumFrom E
 dir :: P.Parser Dir
 dir = read <$> foldl' (\x y -> P.try y <|> x) mzero (P.string <$> ["E", "SE", "SW", "W", "NW", "NE"])
 
@@ -138,15 +139,35 @@ data Col = WH | BL deriving (Show, Eq)
 fC WH = BL
 fC BL = WH
 
+type HG = Map (Int,Int,Int) Col
+ba :: HG -> [Dir] -> HG
 ba m p = M.insert coord (fC col) m
   where
     coord = follow p
     col = fromMaybe WH (m M.!? coord)
 
+neighbors p = map (`move` p) moves
+
 -- Start working down here
 part1, part2 :: _ -> Int
 part1 i = undefined
 part2 i = undefined
+
+step :: HG -> HG
+step m = M.mapWithKey f (M.union m m')
+  where
+    m' = M.fromList ((,WH) <$> (neighbors =<< M.keys m))
+    f c w = case w of
+              WH -> if blacks == 2 then BL else WH
+              BL -> if blacks == 0 || blacks > 2 then WH else BL
+      where
+        ns = neighbors c
+        ncs = fromMaybe WH . (m M.!?) <$> ns
+        blacks = countTrue (== BL) ncs
+        whites = countTrue (== WH) ncs
+iter 0 x = x
+iter n x = iter (n-1) $! step x
+    
 main = do
   let dayNumber = 24
   let dayString = "day" <> show dayNumber
@@ -154,7 +175,10 @@ main = do
   inp <- map (map toUpper) . lines <$> readFile dayFilename
   let Right inp' = traverse pp inp
   print (take 10 inp')
-  print (M.size (M.filter (== BL) (foldl' ba M.empty inp')))
+  let pat = (foldl' ba M.empty inp')
+  let f = M.size . M.filter (== BL)
+  print (f pat)
+  print (f (iter 100 pat))
   -- print (part1 inp)
   -- print (part2 inp)
   -- defaultMain
