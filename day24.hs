@@ -54,10 +54,10 @@ createMap :: [[Dir]] -> HG
 createMap = foldl' addPoint M.empty
 
 addPoint :: HG -> [Dir] -> HG
-addPoint m p = M.insert coord (1 - col) m
+addPoint m p = M.insertWith f coord 1 m
   where
     coord = follow p
-    col = fromMaybe 0 (m M.!? coord)
+    f _ y = 1 - y
 
 part1 :: [[Dir]] -> Int
 part1 = M.size . M.filter (== 1) . createMap
