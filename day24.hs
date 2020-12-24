@@ -36,8 +36,6 @@ origin = (0, 0, 0)
 
 follow = foldl' (flip move) origin
 
-fC = not
-
 type HG = Map (Int, Int, Int) Bool
 
 neighbors p = map (`move` p) moves
@@ -45,7 +43,7 @@ neighbors p = map (`move` p) moves
 step :: HG -> HG
 step m = M.mapWithKey f (M.union m m')
   where
-    m' = M.fromList ((,False) <$> (neighbors =<< M.keys m))
+    m' = M.fromList [(x, False) | x <- neighbors =<< M.keys m, x `M.notMember` m]
     f c w
       | w = not (blacks == 0 || blacks > 2)
       | blacks == 2 = True
@@ -58,7 +56,7 @@ step m = M.mapWithKey f (M.union m m')
 countBlacks = M.size . M.filter id
 
 ba :: HG -> [Dir] -> HG
-ba m p = M.insert coord (fC col) m
+ba m p = M.insert coord (not col) m
   where
     coord = follow p
     col = Just True == (m M.!? coord)
@@ -73,7 +71,7 @@ part2 :: [[Dir]] -> Int
 part2 = countBlacks . iter 100 . createMap
   where
     iter 0 x = x
-    iter n x = iter (n -1) $! step x
+    iter n x = iter (pred n) $! step x
 
 main = do
   let dayNumber = 24
