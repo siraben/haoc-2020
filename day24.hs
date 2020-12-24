@@ -6,14 +6,9 @@ import Data.Char
 import Data.Foldable
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
-import Text.ParserCombinators.Parsec
+import Data.Set (Set)
 import qualified Data.Set as S
-import Data.Functor.Compose
-
--- | Count the number of items in a container where the predicate is true.
-countTrue :: Foldable f => (a -> Bool) -> f a -> Int
-countTrue p = length . filter p . toList
+import Text.ParserCombinators.Parsec
 
 data Dir = E | SE | SW | W | NW | NE
   deriving (Show, Read, Enum)
@@ -34,43 +29,45 @@ move W = pA (-1, 1, 0)
 move NW = pA (0, 1, -1)
 move NE = pA (1, 0, -1)
 
-origin = (0, 0, 0)
-
 follow = foldl' (flip move) origin
+  where
+    origin = (0, 0, 0)
+
+neighbors p = S.fromList (map (`move` p) moves)
+
+type Coord = (Int, Int, Int)
+
+type PC = Set Coord
+
+step2 :: PC -> PC
+step2 ps = keep <> birth
+  where
+    ncs :: Map Coord Int
+    ncs = M.unionsWith (+) (fmap (M.fromSet (const 1) . neighbors) (S.toList ps))
+    keep = M.keysSet (M.filter (\n -> n == 1 || n == 2) (ncs `M.restrictKeys` ps))
+    birth = M.keysSet (M.filter (== 2) (ncs `M.withoutKeys` ps))
 
 type HG = Map (Int, Int, Int) Int
 
-neighbors p = map (`move` p) moves
+createMap :: [[Dir]] -> HG
+createMap = foldl' addPoint M.empty
 
-step :: HG -> HG
-step m = M.mapWithKey f (M.union m m')
-  where
-    m' = M.fromList [(x, 0) | x <- neighbors =<< M.keys m, x `M.notMember` m]
-    f c w = if (w == 1 && blacks == 1) || blacks == 2 then 1 else 0
-      where
-        ns = neighbors c
-        ncs = (m M.!?) <$> ns
-        blacks = sum (Compose ncs)
-
-countBlacks = M.size . M.filter (== 1)
-
-ba :: HG -> [Dir] -> HG
-ba m p = M.insert coord (1 - col) m
+addPoint :: HG -> [Dir] -> HG
+addPoint m p = M.insert coord (1 - col) m
   where
     coord = follow p
     col = if Just 1 == (m M.!? coord) then 1 else 0
 
-createMap :: [[Dir]] -> HG
-createMap = foldl' ba M.empty
-
 part1 :: [[Dir]] -> Int
-part1 = countBlacks . createMap
+part1 = M.size . M.filter (== 1) . createMap
 
 part2 :: [[Dir]] -> Int
-part2 = countBlacks . iter 100 . createMap
+part2 = S.size . iter 100 . toSet . createMap
   where
+    toSet :: HG -> PC
+    toSet = M.keysSet . M.filter (== 1)
     iter 0 x = x
-    iter n x = iter (pred n) $! step x
+    iter n x = iter (pred n) $! step2 x
 
 main = do
   let dayNumber = 24
