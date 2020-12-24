@@ -8,6 +8,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import Text.ParserCombinators.Parsec
+import qualified Data.Set as S
 
 -- | Count the number of items in a container where the predicate is true.
 countTrue :: Foldable f => (a -> Bool) -> f a -> Int
@@ -44,13 +45,10 @@ step :: HG -> HG
 step m = M.mapWithKey f (M.union m m')
   where
     m' = M.fromList [(x, False) | x <- neighbors =<< M.keys m, x `M.notMember` m]
-    f c w
-      | w = not (blacks == 0 || blacks > 2)
-      | blacks == 2 = True
-      | otherwise = False
+    f c w = (w && blacks == 1) || blacks == 2
       where
         ns = neighbors c
-        ncs = fromMaybe False . (m M.!?) <$> ns
+        ncs = (== Just True) . (m M.!?) <$> ns
         blacks = countTrue id ncs
 
 countBlacks = M.size . M.filter id
