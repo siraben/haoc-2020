@@ -1,17 +1,16 @@
 {-# LANGUAGE BangPatterns #-}
 
 import Criterion.Main
+import Data.Semigroup
 
-iter :: (a -> a) -> Int -> a -> a
-iter f = go
-  where
-    go 0 x = x
-    go !n x = go (pred n) $! f x
+-- Bounded by 20201227
+newtype B = B {getB :: Int}
 
-transform :: Int -> Int -> Int
-transform loopSize subjectNum = iter step loopSize 1
-  where
-    step v = (v * subjectNum) `mod` 20201227
+instance Semigroup B where
+  B x <> B y = B ((x * y) `mod` 20201227)
+
+instance Monoid B where
+  mempty = B 1
 
 crack :: Int -> Int -> Int
 crack k l = go 1 7
@@ -25,6 +24,9 @@ part1 = crack 7
 
 part2 :: (Int, Int) -> Int
 part2 (cls, b) = transform cls b
+  where
+    transform :: Int -> Int -> Int
+    transform loopSize = getB . mtimesDefault loopSize . B
 
 main = do
   let dayNumber = 25
