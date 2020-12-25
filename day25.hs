@@ -8,9 +8,9 @@ iter f = go
     go !n x = go (pred n) $! f x
 
 transform :: Int -> Int -> Int
-transform loopSize subjectNum = fst (iter step loopSize (1, subjectNum))
+transform loopSize subjectNum = iter step loopSize 1
   where
-    step (!v, !s) = ((v * s) `mod` 20201227, s)
+    step v = (v * subjectNum) `mod` 20201227
 
 crack :: Int -> Int -> Int
 crack k l = go 1 7
