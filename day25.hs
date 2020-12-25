@@ -1,24 +1,22 @@
 {-# LANGUAGE BangPatterns #-}
-
 import Criterion.Main
-import Data.Foldable
-import Data.Maybe
-
-findFirst :: Foldable f => (a -> Bool) -> f a -> a
-findFirst f = fromJust . find f
 
 iter :: (a -> a) -> Int -> a -> a
 iter f = go
   where
     go 0 x = x
-    go n x = go (pred n) $! f x
-
-step (!v, !s) = ((v * s) `mod` 20201227, s)
+    go !n x = go (pred n) $! f x
 
 transform :: Int -> Int -> Int
 transform loopSize subjectNum = fst (iter step loopSize (1, subjectNum))
+  where
+    step (!v, !s) = ((v * s) `mod` 20201227, s)
 
-crack k l = fst (findFirst ((== l) . snd) (zip [1 ..] (iterate ((`mod` 20201227) . (* k) :: Int -> Int) 7)))
+crack :: Int -> Int -> Int
+crack k l = go 1 7
+  where
+    go !n !y | y == l = n
+             | otherwise = go (succ n) ((y * k) `mod` 20201227)
 
 part1 :: (Int,Int) -> (Int,Int)
 part1 (a, b) = (crack 7 a, crack 7 b)
@@ -32,7 +30,7 @@ main = do
   let dayFilename = dayString <> ".txt"
   [a, b] <- map read . lines <$> readFile dayFilename :: IO [Int]
   let inp = (a, b)
-  let inp'@(cls, dls) = part1 inp
+  let inp' = part1 inp
   print (part1 inp)
   print (part2 (inp, inp'))
   defaultMain
