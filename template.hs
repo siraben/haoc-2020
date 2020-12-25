@@ -35,11 +35,18 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V
 import qualified Text.ParserCombinators.ReadP as P
 
--- Slow splitOn for prototyping
+-- Iterate a function n times
+iter :: (a -> a) -> Int -> a -> a
+iter f = go
+  where
+    go 0 x = x
+    go !n x = go (pred n) $! f x
+
+-- splitOn for strings
 splitOn :: String -> String -> [String]
 splitOn sep s = T.unpack <$> T.splitOn (T.pack sep) (T.pack s)
 
--- ByteString splitOn
+-- splitOn for ByteString
 splitOn' :: B.ByteString -> B.ByteString -> [B.ByteString]
 splitOn' del bs = go bs
   where
